@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package gosprints;
+
+service Sprints {
+    rpc NewTournament(Tournament) returns (Tournament);
+    rpc NewRace(Race) returns (Empty);
+}
+
+message Empty {}
+
+message Race {
+    repeated Player players = 1; 
+    Tournament tournament = 2;
+    int32 destValue = 3;
+}
+
+message DefinedRace {
+    // how many races are remaining before this one will take place
+    uint32 racesRemaining = 1;    
+    repeated DefinedPlayer player = 2;
+}
+
+message DefinedPlayer {
+    string color = 1;
+    uint32 racesRemaining = 2;
+    repeated DefinedPlayer otherContenders = 3;
+}
+
+
+message Player {
+    string name = 1;
+    Gender gender = 2;
+
+    enum Gender {
+        MALE = 0;
+        FEMALE = 1;
+        OTHER = 2;
+    }
+}
+
+message Tournament {
+    string name = 1;
+    int32 destValue = 3;
+
+    enum TournamentMode {
+        DISTANCE = 0;
+        TIME = 1;
+    }
+    TournamentMode mode = 4;
+    int32 playerNum = 5;
+    repeated string color = 6;
+}

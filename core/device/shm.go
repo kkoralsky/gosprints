@@ -1,0 +1,127 @@
+package device
+
+import (
+	"fmt"
+	"github.com/pkg/errors"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"syscall"
+)
+
+const (
+	defaultShmPrefix            = "/gosprints"
+	defaultShmThreshold         = 5
+	defaultShmCounterExecutable = "goldio"
+	shmDevice                   = "/dev/shm"
+	shmPrefixEnv                = "GOSRPINTS_SHM_PREFX"
+	shmExecutableEnv            = "GOSPRINTS_SHM_EXEC"
+)
+
+// ShmReader represents SHM connection to read players distance; implements InputDevice
+type ShmReader struct {
+	playersNum     uint
+	files          []*os.File
+	falseStart     uint
+	threshold      uint
+	counterProcess *os.Process
+}
+
+// Init creates SHM "sockets" where input device data will be written and
+// starts companion program that will do that
+func (s *ShmReader) Init(players []string, samplingRate uint, falseStart uint) error {
+	var (
+		shmPrefix       string
+		counterExecPath string
+		found           bool
+	)
+	counterExecPath, found = os.LookupEnv(shmExecutableEnv)
+	if !found {
+		counterExecPath = defaultShmCounterExecutable
+	}
+
+	counterCmd := exec.Command(counterExecPath, strings.Join(players, ","))
+	counterCmd.Env = os.Environ()
+
+	shmPrefix, found = os.LookupEnv(shmPrefixEnv)
+	if !found {
+		shmPrefix = defaultShmPrefix
+		counterCmd.Env = append(counterCmd.Env, shmPrefixEnv+"="+shmPrefix)
+	}
+
+	s.threshold = samplingRate
+	s.falseStart = falseStart
+	s.playersNum = uint(len(players))
+
+	for i := 0; i < len(players); i++ {
+		filename := filepath.Join(shmDevice, shmPrefix+players[i])
+		file, err := os.OpenFile(filename, os.O_CREATE|os.O_RDONLY, 0666)
+		file.Truncate(0)
+		if err != nil {
+			return err
+		}
+		s.files = append(s.files, file)
+	}
+
+	if err := counterCmd.Start(); err != nil {
+		return err
+	}
+	s.counterProcess = counterCmd.Process
+
+	return nil
+}
+
+// GetDist reads current distance of a player from a SHM file
+func (s *ShmReader) GetDist(playerID uint) (uint, error) {
+	var (
+		b      []byte
+		res    uint64
+		errCtx = fmt.Sprintf("SHM read for player %d failed", playerID)
+	)
+	if _, err := s.files[playerID].Read(b); err != nil {
+		return 0, errors.Wrap(err, errCtx)
+	}
+
+	res, err := strconv.ParseUint(string(b), 10, 64)
+
+	if err != nil {
+		return 0, errors.Wrap(err, errCtx)
+	}
+	s.files[playerID].Seek(0, 0)
+	return uint(res), nil
+}
+
+// GetPlayerCount returns number of players that were defined
+func (s *ShmReader) GetPlayerCount() uint {
+	return s.playersNum
+}
+
+// Clean triggers distance reset to 0 in the measuring program
+func (s *ShmReader) Clean() error {
+	panic("not implemented")
+}
+
+// Check checks whether in any of the input SHM files distance of the allowed
+// falseStart was exceeded
+func (s *ShmReader) Check() (uint, error) {
+	panic("not implemented")
+}
+
+func (s *ShmReader) Close() error {
+	var errs []string
+
+	if err := s.counterProcess.Signal(syscall.SIGTERM); err != nil {
+		errs = append(errs, err.Error())
+	}
+	for _, f := range s.files {
+		if err := f.Close(); err != nil {
+			errs = append(errs, err.Error())
+		}
+	}
+	if len(errs) != 0 {
+		return errors.New("Closing failed:\n" + strings.Join(errs, "\n"))
+	}
+	return nil
+}
