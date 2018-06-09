@@ -34,14 +34,14 @@ func TestInitFileCreation(t *testing.T) {
 	}
 
 	for _, f := range s.files {
-		f_info, _ := f.Stat()
-		if f_info.Size() != 0 {
-			t.Errorf("size of the SHM should be 0 at first; its: %d", f_info.Size())
+		fInfo, _ := f.Stat()
+		if fInfo.Size() != 0 {
+			t.Errorf("size of the SHM should be 0 at first; its: %d", fInfo.Size())
 		}
-		year, month, day := f_info.ModTime().Date()
+		year, month, day := fInfo.ModTime().Date()
 		if !(year == now.Year() && month == now.Month() && day == now.Day()) {
 			t.Errorf("modification time of %s file is not today, its: %v",
-				f.Name(), f_info.ModTime())
+				f.Name(), fInfo.ModTime())
 		}
 	}
 }
@@ -103,4 +103,95 @@ func TestCloseErrors(t *testing.T) {
 		t.Errorf("there should be 3 lines of error message (2 errors). %d found",
 			len(errs))
 	}
+}
+
+func TestCheck(t *testing.T) {
+	var (
+		s           = &ShmReader{}
+		players     = []string{"1", "2", "3"}
+		shmWFiles   = make([]*os.File, 3)
+		openShmFile = func(index uint) *os.File {
+			f, err := os.OpenFile(s.files[index].Name(), os.O_WRONLY, 0666)
+			if err != nil {
+				t.Fatal(err)
+			}
+			return f
+		}
+		writeShmFile = func(index uint, distance string) {
+			shmWFiles[index].Seek(0, 0)
+			shmWFiles[index].WriteString(distance)
+			shmWFiles[index].Sync()
+		}
+		truncateShmFiles = func() {
+			for _, f := range shmWFiles {
+				f.Truncate(0)
+			}
+		}
+	)
+
+	err := s.Init(players, 4, 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	shmWFiles[0] = openShmFile(0)
+	shmWFiles[1] = openShmFile(1)
+	shmWFiles[2] = openShmFile(2)
+
+	t.Run("check first player false start", func(tt *testing.T) {
+		writeShmFile(0, "6")
+		writeShmFile(1, "0")
+		writeShmFile(2, "5")
+
+		blame, err := s.Check()
+		truncateShmFiles()
+		if err != nil {
+			tt.Errorf("error on checking out: %s", err.Error())
+		}
+		if blame != 0 {
+			tt.Errorf("first (0) player expected to blame; %d have", blame)
+		}
+	})
+	t.Run("check no player false start", func(tt *testing.T) {
+		writeShmFile(0, "5")
+		writeShmFile(1, "0")
+		writeShmFile(2, "0")
+
+		blame, err := s.Check()
+		truncateShmFiles()
+		if err != nil {
+			tt.Errorf("error on checking out: %s", err.Error())
+		}
+		if blame != -1 {
+			tt.Errorf("no false start expected (-1); %d have", blame)
+		}
+
+	})
+	t.Run("check player 2 and 3 false starting", func(tt *testing.T) {
+		writeShmFile(0, "0")
+		writeShmFile(1, "6")
+		writeShmFile(2, "7")
+
+		blame, err := s.Check()
+		truncateShmFiles()
+		if err != nil {
+			tt.Errorf("error on checking out: %s", err.Error())
+		}
+		if !(blame == 1 || blame == 2) {
+			tt.Errorf("expected second (1) or third (2) player to blame; got %d",
+				blame)
+		}
+	})
+	t.Run("check writing garbage to SHM file", func(tt *testing.T) {
+		writeShmFile(2, "xfg1")
+
+		blame, err := s.Check()
+		truncateShmFiles()
+		if err == nil {
+			tt.Error("expected error, got nil")
+		}
+		if blame != -1 {
+			tt.Errorf("we should not blame anyone if error occurs; got %d instead", blame)
+		}
+	})
 }

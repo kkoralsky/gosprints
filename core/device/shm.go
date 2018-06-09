@@ -100,15 +100,37 @@ func (s *ShmReader) GetPlayerCount() uint {
 
 // Clean triggers distance reset to 0 in the measuring program
 func (s *ShmReader) Clean() error {
-	panic("not implemented")
+	return s.counterProcess.Signal(syscall.SIGSTOP)
 }
 
 // Check checks whether in any of the input SHM files distance of the allowed
 // falseStart was exceeded
-func (s *ShmReader) Check() (uint, error) {
-	panic("not implemented")
+func (s *ShmReader) Check() (int, error) {
+	var buf = make([]byte, 1024)
+	for i, f := range s.files {
+		_, err := f.Seek(0, 0)
+		if err != nil {
+			return -1, err
+		}
+		err = f.Sync()
+		if err != nil {
+			return -1, err
+		}
+		if _, err := f.Read(buf); err != nil {
+			return -1, err
+		}
+		rotations, err := strconv.ParseUint(strings.TrimRight(string(buf), "\x00"), 10, 32)
+		if err != nil {
+			return -1, err
+		}
+		if rotations > uint64(s.falseStart) {
+			return i, nil
+		}
+	}
+	return -1, nil
 }
 
+// Close terminates counter companion program and closes all SHM files
 func (s *ShmReader) Close() error {
 	var errs []string
 
