@@ -20,7 +20,8 @@ func SprintsServer(cfg core.ServerConfig) {
 		panic(err)
 	}
 
-	devicePoller, err := device.SetupDevice(cfg.InputDevice, cfg.SamplingRate, cfg.FailstartThreshold)
+	devicePoller, err := device.SetupDevice(cfg.InputDevice, cfg.SamplingRate,
+		cfg.FailstartThreshold)
 	if err != nil {
 		panic(err)
 	}
