@@ -11,7 +11,7 @@ type InputDevice interface {
 	GetDist(playerID uint) (uint, error)                          // returns actual distance ridden by the given player
 	GetPlayerCount() uint                                         // returns player count initialized
 	Clean() error                                                 // resets players distance to 0
-	Check() (uint, error)                                         // checks if any player has exceeded the falseStart distance
+	Check() (int, error)                                          // checks if any player has exceeded the falseStart distance
 	Close() error                                                 // performs cleanups: closes all devices, files etc.
 }
 
