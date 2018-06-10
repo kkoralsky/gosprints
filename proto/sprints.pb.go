@@ -21,6 +21,11 @@ import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
 
+import (
+	context "golang.org/x/net/context"
+	grpc "google.golang.org/grpc"
+)
+
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 var _ = fmt.Errorf
@@ -255,6 +260,111 @@ func init() {
 	proto.RegisterType((*Tournament)(nil), "gosprints.Tournament")
 	proto.RegisterEnum("gosprints.Player_Gender", Player_Gender_name, Player_Gender_value)
 	proto.RegisterEnum("gosprints.Tournament_TournamentMode", Tournament_TournamentMode_name, Tournament_TournamentMode_value)
+}
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConn
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion4
+
+// Client API for Sprints service
+
+type SprintsClient interface {
+	NewTournament(ctx context.Context, in *Tournament, opts ...grpc.CallOption) (*Tournament, error)
+	NewRace(ctx context.Context, in *Race, opts ...grpc.CallOption) (*Empty, error)
+}
+
+type sprintsClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewSprintsClient(cc *grpc.ClientConn) SprintsClient {
+	return &sprintsClient{cc}
+}
+
+func (c *sprintsClient) NewTournament(ctx context.Context, in *Tournament, opts ...grpc.CallOption) (*Tournament, error) {
+	out := new(Tournament)
+	err := grpc.Invoke(ctx, "/gosprints.Sprints/NewTournament", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *sprintsClient) NewRace(ctx context.Context, in *Race, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := grpc.Invoke(ctx, "/gosprints.Sprints/NewRace", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Server API for Sprints service
+
+type SprintsServer interface {
+	NewTournament(context.Context, *Tournament) (*Tournament, error)
+	NewRace(context.Context, *Race) (*Empty, error)
+}
+
+func RegisterSprintsServer(s *grpc.Server, srv SprintsServer) {
+	s.RegisterService(&_Sprints_serviceDesc, srv)
+}
+
+func _Sprints_NewTournament_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Tournament)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SprintsServer).NewTournament(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/gosprints.Sprints/NewTournament",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SprintsServer).NewTournament(ctx, req.(*Tournament))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Sprints_NewRace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Race)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SprintsServer).NewRace(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/gosprints.Sprints/NewRace",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SprintsServer).NewRace(ctx, req.(*Race))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _Sprints_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "gosprints.Sprints",
+	HandlerType: (*SprintsServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "NewTournament",
+			Handler:    _Sprints_NewTournament_Handler,
+		},
+		{
+			MethodName: "NewRace",
+			Handler:    _Sprints_NewRace_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "sprints.proto",
 }
 
 func init() { proto.RegisterFile("sprints.proto", fileDescriptor0) }
