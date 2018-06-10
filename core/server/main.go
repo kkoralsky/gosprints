@@ -4,15 +4,7 @@ import (
 	"github.com/kkoralsky/gosprints/core"
 	"github.com/kkoralsky/gosprints/core/device"
 	"github.com/kkoralsky/gosprints/core/visual"
-	//"github.com/kkoralsky/gosprints/proto"
 )
-
-type CmdServer struct {
-	port uint
-	//StartTournament(name) error
-	//LoadTournament(name) error
-	//PrepareRace()
-}
 
 func SprintsServer(cfg core.ServerConfig) {
 	vis, err := visual.SetupVis(cfg.VisName, cfg.MovingUnit)
@@ -26,9 +18,20 @@ func SprintsServer(cfg core.ServerConfig) {
 		panic(err)
 	}
 
+	cmdServer, err := SetupCmdServer(cfg.CmdPort, cfg.GrpcDebug)
+	if err != nil {
+		panic(err)
+	}
+	visServer, err := SetupVisServer(cfg.VisPort)
+	if err != nil {
+		panic(err)
+	}
+
 	go cmdServer.Run()
 	go visServer.Run()
-	go devicePoller.Run()
+	if err := devicePoller.Start(); err != nil {
+		panic(err)
+	}
 
 	vis.Run()
 	devicePoller.Close()
