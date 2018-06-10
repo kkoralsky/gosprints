@@ -25,6 +25,7 @@ type ServerConfig struct {
 	RaceMode           rune
 	raceMode           string
 	InputDevice        string
+	GrpcDebug          bool
 }
 
 // ClientConfig is client configuration struct
@@ -45,6 +46,7 @@ var (
 		CmdPort:            9999,
 		RaceMode:           't',
 		InputDevice:        "SHM:5,6",
+		GrpcDebug:          false,
 	}
 	defaultClientConfig = ClientConfig{
 		ServerAddr: "goldie1:9998",
@@ -77,6 +79,8 @@ func (s *ServerConfig) Setup() *flag.FlagSet {
 		"race mode: either t for time constrained race or d for distance constrained")
 	cfg.StringVar(&s.InputDevice, "input_device", defaultServerConfig.InputDevice,
 		"in the form: <type>:<device1_spec>,<device2_spec>,...")
+	cfg.BoolVar(&s.GrpcDebug, "grpc_debug", defaultServerConfig.GrpcDebug,
+		"run GRPC server in debug mode")
 
 	return cfg
 }
