@@ -8,6 +8,7 @@ import (
 // InputDevice -
 type InputDevice interface {
 	Init(players []string, threshold uint, falseStart uint) error // initialization of a device
+	Start() error                                                 // start the device
 	GetDist(playerID uint) (uint, error)                          // returns actual distance ridden by the given player
 	GetPlayerCount() uint                                         // returns player count initialized
 	Clean() error                                                 // resets players distance to 0

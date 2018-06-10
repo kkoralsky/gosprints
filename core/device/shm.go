@@ -27,10 +27,10 @@ type ShmReader struct {
 	falseStart     uint
 	threshold      uint
 	counterProcess *os.Process
+	counterCmd     *exec.Cmd
 }
 
-// Init creates SHM "sockets" where input device data will be written and
-// starts companion program that will do that
+// Init creates SHM "sockets" where input device data will be written
 func (s *ShmReader) Init(players []string, samplingRate uint, falseStart uint) error {
 	var (
 		shmPrefix       string
@@ -42,13 +42,13 @@ func (s *ShmReader) Init(players []string, samplingRate uint, falseStart uint) e
 		counterExecPath = defaultShmCounterExecutable
 	}
 
-	counterCmd := exec.Command(counterExecPath, strings.Join(players, ","))
-	counterCmd.Env = os.Environ()
+	s.counterCmd = exec.Command(counterExecPath, strings.Join(players, ","))
+	s.counterCmd.Env = os.Environ()
 
 	shmPrefix, found = os.LookupEnv(shmPrefixEnv)
 	if !found {
 		shmPrefix = defaultShmPrefix
-		counterCmd.Env = append(counterCmd.Env, shmPrefixEnv+"="+shmPrefix)
+		s.counterCmd.Env = append(s.counterCmd.Env, shmPrefixEnv+"="+shmPrefix)
 	}
 
 	s.threshold = samplingRate
@@ -65,11 +65,15 @@ func (s *ShmReader) Init(players []string, samplingRate uint, falseStart uint) e
 		s.files = append(s.files, file)
 	}
 
-	if err := counterCmd.Start(); err != nil {
+	return nil
+}
+
+// Start starts a counter program that will write distances into SHM files
+func (s *ShmReader) Start() error {
+	if err := s.counterCmd.Start(); err != nil {
 		return err
 	}
-	s.counterProcess = counterCmd.Process
-
+	s.counterProcess = s.counterCmd.Process
 	return nil
 }
 
