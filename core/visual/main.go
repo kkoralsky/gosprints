@@ -12,12 +12,14 @@ type VisualCfg struct {
 	resolutionWidth  uint16
 	resolutionHeight uint16
 	winCfg           *pixelgl.WindowConfig
-	windowed         bool
+	fullscreen       bool
 }
 
 func (v *VisualCfg) Run() {
 	pixelgl.Run(func() {
-		v.winCfg.Monitor = pixelgl.PrimaryMonitor()
+		if v.fullscreen {
+			v.winCfg.Monitor = pixelgl.PrimaryMonitor()
+		}
 		win, err := pixelgl.NewWindow(*v.winCfg)
 		if err != nil {
 			panic(err)
@@ -29,7 +31,7 @@ func (v *VisualCfg) Run() {
 	})
 }
 
-func SetupVis(name string, movingUnit uint) (VisualCfg, error) {
+func SetupVis(name string, movingUnit uint, fullscreen bool) (VisualCfg, error) {
 	visCfg := VisualCfg{
 		winCfg: &pixelgl.WindowConfig{
 			Title:     name,
@@ -37,6 +39,7 @@ func SetupVis(name string, movingUnit uint) (VisualCfg, error) {
 			Resizable: false,
 			VSync:     true,
 		},
+		fullscreen: fullscreen,
 	}
 	return visCfg, nil
 }

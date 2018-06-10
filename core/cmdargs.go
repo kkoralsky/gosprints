@@ -26,6 +26,7 @@ type ServerConfig struct {
 	raceMode           string
 	InputDevice        string
 	GrpcDebug          bool
+	Fullscreen         bool
 }
 
 // ClientConfig is client configuration struct
@@ -47,6 +48,7 @@ var (
 		RaceMode:           't',
 		InputDevice:        "SHM:5,6",
 		GrpcDebug:          false,
+		Fullscreen:         false,
 	}
 	defaultClientConfig = ClientConfig{
 		ServerAddr: "goldie1:9998",
@@ -81,6 +83,8 @@ func (s *ServerConfig) Setup() *flag.FlagSet {
 		"in the form: <type>:<device1_spec>,<device2_spec>,...")
 	cfg.BoolVar(&s.GrpcDebug, "grpc_debug", defaultServerConfig.GrpcDebug,
 		"run GRPC server in debug mode")
+	cfg.BoolVar(&s.Fullscreen, "fullscreen", defaultServerConfig.Fullscreen,
+		"run visualization in fullscreen mode")
 
 	return cfg
 }

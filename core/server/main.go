@@ -7,7 +7,7 @@ import (
 )
 
 func SprintsServer(cfg core.ServerConfig) {
-	vis, err := visual.SetupVis(cfg.VisName, cfg.MovingUnit)
+	vis, err := visual.SetupVis(cfg.VisName, cfg.MovingUnit, cfg.Fullscreen)
 	if err != nil {
 		panic(err)
 	}
