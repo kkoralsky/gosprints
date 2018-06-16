@@ -1,23 +1,14 @@
 syntax = "proto3";
 
-package pb;
+package gosprints;
 
-// server & client interface
+
 service Sprints {
     rpc NewTournament(Tournament) returns (Tournament);
-    rpc NewRace(Race) returns (Empty);
-    rpc StartRace(Empty) returns (Empty);
-    rpc AbortRace(Empty) returns (Empty);
-    rpc ConfigureVis(VisConfiguration) returns (Empty);
+    rpc PrepareRace(Race) returns (DefinedRace);
+    rpc NewPreparedRace(PreparedRace) returns (None);
+    rpc NewPlayer(Player) returns (DefinedPlayer);
 }
-
-// client only interface 
-service Races {
-    rpc UpdateRace(stream Racer) returns (Empty);
-    rpc FinishRace(Empty) returns (Empty);
-}
-
-message Empty {}
 
 message Race {
     repeated Player players = 1; 
@@ -49,29 +40,15 @@ message Player {
     }
 }
 
-message Racer {
-    int32 playerNum = 1;
-    int32 distance = 2;
-}
-
 message Tournament {
     string name = 1;
     int32 destValue = 3;
-    TournamentMode mode = 4;
-    int32 playerCount = 5;
-    repeated string color = 6;
 
     enum TournamentMode {
         DISTANCE = 0;
         TIME = 1;
     }
-}
-
-message VisConfiguration {
-    string hostName = 1; 
-    string visName = 2;
-    bool fullscreen = 3;
-    uint32 resolutionWidth = 4;
-    uint32 resolutionHeight = 5;
-    uint32 movingUnit = 6;
+    TournamentMode mode = 4;
+    int32 playerNum = 5;
+    repeated string color = 6;
 }

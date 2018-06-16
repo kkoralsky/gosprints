@@ -2,7 +2,7 @@
 // source: sprints.proto
 
 /*
-Package gosprints is a generated protocol buffer package.
+Package pb is a generated protocol buffer package.
 
 It is generated from these files:
 	sprints.proto
@@ -13,9 +13,11 @@ It has these top-level messages:
 	DefinedRace
 	DefinedPlayer
 	Player
+	Racer
 	Tournament
+	VisConfiguration
 */
-package gosprints
+package pb
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -80,7 +82,7 @@ var Tournament_TournamentMode_value = map[string]int32{
 func (x Tournament_TournamentMode) String() string {
 	return proto.EnumName(Tournament_TournamentMode_name, int32(x))
 }
-func (Tournament_TournamentMode) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, []int{5, 0} }
+func (Tournament_TournamentMode) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, []int{6, 0} }
 
 type Empty struct {
 }
@@ -181,7 +183,7 @@ func (m *DefinedPlayer) GetOtherContenders() []*DefinedPlayer {
 
 type Player struct {
 	Name   string        `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
-	Gender Player_Gender `protobuf:"varint,2,opt,name=gender,enum=gosprints.Player_Gender" json:"gender,omitempty"`
+	Gender Player_Gender `protobuf:"varint,2,opt,name=gender,enum=pb.Player_Gender" json:"gender,omitempty"`
 }
 
 func (m *Player) Reset()                    { *m = Player{} }
@@ -203,18 +205,42 @@ func (m *Player) GetGender() Player_Gender {
 	return Player_MALE
 }
 
+type Racer struct {
+	PlayerNum int32 `protobuf:"varint,1,opt,name=playerNum" json:"playerNum,omitempty"`
+	Distance  int32 `protobuf:"varint,2,opt,name=distance" json:"distance,omitempty"`
+}
+
+func (m *Racer) Reset()                    { *m = Racer{} }
+func (m *Racer) String() string            { return proto.CompactTextString(m) }
+func (*Racer) ProtoMessage()               {}
+func (*Racer) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{5} }
+
+func (m *Racer) GetPlayerNum() int32 {
+	if m != nil {
+		return m.PlayerNum
+	}
+	return 0
+}
+
+func (m *Racer) GetDistance() int32 {
+	if m != nil {
+		return m.Distance
+	}
+	return 0
+}
+
 type Tournament struct {
-	Name      string                    `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
-	DestValue int32                     `protobuf:"varint,3,opt,name=destValue" json:"destValue,omitempty"`
-	Mode      Tournament_TournamentMode `protobuf:"varint,4,opt,name=mode,enum=gosprints.Tournament_TournamentMode" json:"mode,omitempty"`
-	PlayerNum int32                     `protobuf:"varint,5,opt,name=playerNum" json:"playerNum,omitempty"`
-	Color     []string                  `protobuf:"bytes,6,rep,name=color" json:"color,omitempty"`
+	Name        string                    `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
+	DestValue   int32                     `protobuf:"varint,3,opt,name=destValue" json:"destValue,omitempty"`
+	Mode        Tournament_TournamentMode `protobuf:"varint,4,opt,name=mode,enum=pb.Tournament_TournamentMode" json:"mode,omitempty"`
+	PlayerCount int32                     `protobuf:"varint,5,opt,name=playerCount" json:"playerCount,omitempty"`
+	Color       []string                  `protobuf:"bytes,6,rep,name=color" json:"color,omitempty"`
 }
 
 func (m *Tournament) Reset()                    { *m = Tournament{} }
 func (m *Tournament) String() string            { return proto.CompactTextString(m) }
 func (*Tournament) ProtoMessage()               {}
-func (*Tournament) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{5} }
+func (*Tournament) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{6} }
 
 func (m *Tournament) GetName() string {
 	if m != nil {
@@ -237,9 +263,9 @@ func (m *Tournament) GetMode() Tournament_TournamentMode {
 	return Tournament_DISTANCE
 }
 
-func (m *Tournament) GetPlayerNum() int32 {
+func (m *Tournament) GetPlayerCount() int32 {
 	if m != nil {
-		return m.PlayerNum
+		return m.PlayerCount
 	}
 	return 0
 }
@@ -251,15 +277,73 @@ func (m *Tournament) GetColor() []string {
 	return nil
 }
 
+type VisConfiguration struct {
+	HostName         string `protobuf:"bytes,1,opt,name=hostName" json:"hostName,omitempty"`
+	VisName          string `protobuf:"bytes,2,opt,name=visName" json:"visName,omitempty"`
+	Fullscreen       bool   `protobuf:"varint,3,opt,name=fullscreen" json:"fullscreen,omitempty"`
+	ResolutionWidth  uint32 `protobuf:"varint,4,opt,name=resolutionWidth" json:"resolutionWidth,omitempty"`
+	ResolutionHeight uint32 `protobuf:"varint,5,opt,name=resolutionHeight" json:"resolutionHeight,omitempty"`
+	MovingUnit       uint32 `protobuf:"varint,6,opt,name=movingUnit" json:"movingUnit,omitempty"`
+}
+
+func (m *VisConfiguration) Reset()                    { *m = VisConfiguration{} }
+func (m *VisConfiguration) String() string            { return proto.CompactTextString(m) }
+func (*VisConfiguration) ProtoMessage()               {}
+func (*VisConfiguration) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{7} }
+
+func (m *VisConfiguration) GetHostName() string {
+	if m != nil {
+		return m.HostName
+	}
+	return ""
+}
+
+func (m *VisConfiguration) GetVisName() string {
+	if m != nil {
+		return m.VisName
+	}
+	return ""
+}
+
+func (m *VisConfiguration) GetFullscreen() bool {
+	if m != nil {
+		return m.Fullscreen
+	}
+	return false
+}
+
+func (m *VisConfiguration) GetResolutionWidth() uint32 {
+	if m != nil {
+		return m.ResolutionWidth
+	}
+	return 0
+}
+
+func (m *VisConfiguration) GetResolutionHeight() uint32 {
+	if m != nil {
+		return m.ResolutionHeight
+	}
+	return 0
+}
+
+func (m *VisConfiguration) GetMovingUnit() uint32 {
+	if m != nil {
+		return m.MovingUnit
+	}
+	return 0
+}
+
 func init() {
-	proto.RegisterType((*Empty)(nil), "gosprints.Empty")
-	proto.RegisterType((*Race)(nil), "gosprints.Race")
-	proto.RegisterType((*DefinedRace)(nil), "gosprints.DefinedRace")
-	proto.RegisterType((*DefinedPlayer)(nil), "gosprints.DefinedPlayer")
-	proto.RegisterType((*Player)(nil), "gosprints.Player")
-	proto.RegisterType((*Tournament)(nil), "gosprints.Tournament")
-	proto.RegisterEnum("gosprints.Player_Gender", Player_Gender_name, Player_Gender_value)
-	proto.RegisterEnum("gosprints.Tournament_TournamentMode", Tournament_TournamentMode_name, Tournament_TournamentMode_value)
+	proto.RegisterType((*Empty)(nil), "pb.Empty")
+	proto.RegisterType((*Race)(nil), "pb.Race")
+	proto.RegisterType((*DefinedRace)(nil), "pb.DefinedRace")
+	proto.RegisterType((*DefinedPlayer)(nil), "pb.DefinedPlayer")
+	proto.RegisterType((*Player)(nil), "pb.Player")
+	proto.RegisterType((*Racer)(nil), "pb.Racer")
+	proto.RegisterType((*Tournament)(nil), "pb.Tournament")
+	proto.RegisterType((*VisConfiguration)(nil), "pb.VisConfiguration")
+	proto.RegisterEnum("pb.Player_Gender", Player_Gender_name, Player_Gender_value)
+	proto.RegisterEnum("pb.Tournament_TournamentMode", Tournament_TournamentMode_name, Tournament_TournamentMode_value)
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -275,6 +359,9 @@ const _ = grpc.SupportPackageIsVersion4
 type SprintsClient interface {
 	NewTournament(ctx context.Context, in *Tournament, opts ...grpc.CallOption) (*Tournament, error)
 	NewRace(ctx context.Context, in *Race, opts ...grpc.CallOption) (*Empty, error)
+	StartRace(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
+	AbortRace(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
+	ConfigureVis(ctx context.Context, in *VisConfiguration, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type sprintsClient struct {
@@ -287,7 +374,7 @@ func NewSprintsClient(cc *grpc.ClientConn) SprintsClient {
 
 func (c *sprintsClient) NewTournament(ctx context.Context, in *Tournament, opts ...grpc.CallOption) (*Tournament, error) {
 	out := new(Tournament)
-	err := grpc.Invoke(ctx, "/gosprints.Sprints/NewTournament", in, out, c.cc, opts...)
+	err := grpc.Invoke(ctx, "/pb.Sprints/NewTournament", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -296,7 +383,34 @@ func (c *sprintsClient) NewTournament(ctx context.Context, in *Tournament, opts 
 
 func (c *sprintsClient) NewRace(ctx context.Context, in *Race, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
-	err := grpc.Invoke(ctx, "/gosprints.Sprints/NewRace", in, out, c.cc, opts...)
+	err := grpc.Invoke(ctx, "/pb.Sprints/NewRace", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *sprintsClient) StartRace(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := grpc.Invoke(ctx, "/pb.Sprints/StartRace", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *sprintsClient) AbortRace(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := grpc.Invoke(ctx, "/pb.Sprints/AbortRace", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *sprintsClient) ConfigureVis(ctx context.Context, in *VisConfiguration, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := grpc.Invoke(ctx, "/pb.Sprints/ConfigureVis", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -308,6 +422,9 @@ func (c *sprintsClient) NewRace(ctx context.Context, in *Race, opts ...grpc.Call
 type SprintsServer interface {
 	NewTournament(context.Context, *Tournament) (*Tournament, error)
 	NewRace(context.Context, *Race) (*Empty, error)
+	StartRace(context.Context, *Empty) (*Empty, error)
+	AbortRace(context.Context, *Empty) (*Empty, error)
+	ConfigureVis(context.Context, *VisConfiguration) (*Empty, error)
 }
 
 func RegisterSprintsServer(s *grpc.Server, srv SprintsServer) {
@@ -324,7 +441,7 @@ func _Sprints_NewTournament_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/gosprints.Sprints/NewTournament",
+		FullMethod: "/pb.Sprints/NewTournament",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SprintsServer).NewTournament(ctx, req.(*Tournament))
@@ -342,7 +459,7 @@ func _Sprints_NewRace_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/gosprints.Sprints/NewRace",
+		FullMethod: "/pb.Sprints/NewRace",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SprintsServer).NewRace(ctx, req.(*Race))
@@ -350,8 +467,62 @@ func _Sprints_NewRace_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Sprints_StartRace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SprintsServer).StartRace(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Sprints/StartRace",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SprintsServer).StartRace(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Sprints_AbortRace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SprintsServer).AbortRace(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Sprints/AbortRace",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SprintsServer).AbortRace(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Sprints_ConfigureVis_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VisConfiguration)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SprintsServer).ConfigureVis(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Sprints/ConfigureVis",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SprintsServer).ConfigureVis(ctx, req.(*VisConfiguration))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Sprints_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "gosprints.Sprints",
+	ServiceName: "pb.Sprints",
 	HandlerType: (*SprintsServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -362,41 +533,197 @@ var _Sprints_serviceDesc = grpc.ServiceDesc{
 			MethodName: "NewRace",
 			Handler:    _Sprints_NewRace_Handler,
 		},
+		{
+			MethodName: "StartRace",
+			Handler:    _Sprints_StartRace_Handler,
+		},
+		{
+			MethodName: "AbortRace",
+			Handler:    _Sprints_AbortRace_Handler,
+		},
+		{
+			MethodName: "ConfigureVis",
+			Handler:    _Sprints_ConfigureVis_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
+	Metadata: "sprints.proto",
+}
+
+// Client API for Races service
+
+type RacesClient interface {
+	UpdateRace(ctx context.Context, opts ...grpc.CallOption) (Races_UpdateRaceClient, error)
+	FinishRace(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
+}
+
+type racesClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewRacesClient(cc *grpc.ClientConn) RacesClient {
+	return &racesClient{cc}
+}
+
+func (c *racesClient) UpdateRace(ctx context.Context, opts ...grpc.CallOption) (Races_UpdateRaceClient, error) {
+	stream, err := grpc.NewClientStream(ctx, &_Races_serviceDesc.Streams[0], c.cc, "/pb.Races/UpdateRace", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &racesUpdateRaceClient{stream}
+	return x, nil
+}
+
+type Races_UpdateRaceClient interface {
+	Send(*Racer) error
+	CloseAndRecv() (*Empty, error)
+	grpc.ClientStream
+}
+
+type racesUpdateRaceClient struct {
+	grpc.ClientStream
+}
+
+func (x *racesUpdateRaceClient) Send(m *Racer) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *racesUpdateRaceClient) CloseAndRecv() (*Empty, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(Empty)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *racesClient) FinishRace(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := grpc.Invoke(ctx, "/pb.Races/FinishRace", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Server API for Races service
+
+type RacesServer interface {
+	UpdateRace(Races_UpdateRaceServer) error
+	FinishRace(context.Context, *Empty) (*Empty, error)
+}
+
+func RegisterRacesServer(s *grpc.Server, srv RacesServer) {
+	s.RegisterService(&_Races_serviceDesc, srv)
+}
+
+func _Races_UpdateRace_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(RacesServer).UpdateRace(&racesUpdateRaceServer{stream})
+}
+
+type Races_UpdateRaceServer interface {
+	SendAndClose(*Empty) error
+	Recv() (*Racer, error)
+	grpc.ServerStream
+}
+
+type racesUpdateRaceServer struct {
+	grpc.ServerStream
+}
+
+func (x *racesUpdateRaceServer) SendAndClose(m *Empty) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *racesUpdateRaceServer) Recv() (*Racer, error) {
+	m := new(Racer)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _Races_FinishRace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RacesServer).FinishRace(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Races/FinishRace",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RacesServer).FinishRace(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _Races_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "pb.Races",
+	HandlerType: (*RacesServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "FinishRace",
+			Handler:    _Races_FinishRace_Handler,
+		},
+	},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "UpdateRace",
+			Handler:       _Races_UpdateRace_Handler,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "sprints.proto",
 }
 
 func init() { proto.RegisterFile("sprints.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
-	// 436 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x93, 0x51, 0x8f, 0x93, 0x40,
-	0x10, 0xc7, 0xdd, 0x16, 0x68, 0x99, 0x4a, 0x0f, 0x37, 0x9a, 0x6c, 0x2e, 0x3e, 0x90, 0x8d, 0x31,
-	0x18, 0x0d, 0x31, 0x35, 0x26, 0xbe, 0xf8, 0x70, 0xde, 0xa1, 0x5e, 0x62, 0xd1, 0xec, 0x11, 0xdf,
-	0xb1, 0xac, 0x48, 0x52, 0x76, 0x09, 0x6c, 0xbd, 0xf4, 0x1b, 0xf8, 0xea, 0x97, 0xf3, 0xf3, 0x18,
-	0x16, 0xa4, 0xb4, 0x21, 0xde, 0xdb, 0xf2, 0x9f, 0xff, 0x0c, 0xbf, 0xd9, 0x99, 0x05, 0xa7, 0x2e,
-	0xab, 0x5c, 0xa8, 0x3a, 0x28, 0x2b, 0xa9, 0x24, 0xb6, 0x33, 0xd9, 0x09, 0x74, 0x06, 0x66, 0x58,
-	0x94, 0x6a, 0x4f, 0x7f, 0x21, 0x30, 0x58, 0xb2, 0xe1, 0xf8, 0x39, 0xcc, 0xca, 0x6d, 0xb2, 0xe7,
-	0x55, 0x4d, 0x90, 0x37, 0xf5, 0x17, 0xab, 0x07, 0x41, 0x6f, 0x0f, 0xbe, 0xe8, 0x08, 0xfb, 0xe7,
-	0xc0, 0xaf, 0x01, 0x94, 0xdc, 0x55, 0x22, 0x29, 0xb8, 0x50, 0x64, 0xe2, 0x21, 0x7f, 0xb1, 0x7a,
-	0x34, 0xf0, 0xc7, 0x7d, 0x90, 0x0d, 0x8c, 0xf8, 0x31, 0xd8, 0x29, 0xaf, 0xd5, 0xd7, 0x64, 0xbb,
-	0xe3, 0x64, 0xea, 0x21, 0xdf, 0x64, 0x07, 0x81, 0x66, 0xb0, 0xb8, 0xe2, 0xdf, 0x73, 0xc1, 0x53,
-	0x0d, 0xf4, 0x14, 0x96, 0x55, 0xb2, 0xe1, 0x35, 0xe3, 0x45, 0x92, 0x8b, 0x5c, 0x64, 0x04, 0x79,
-	0xc8, 0x77, 0xd8, 0x89, 0x8a, 0x5f, 0x82, 0xd5, 0x62, 0x91, 0x89, 0xe6, 0x26, 0x03, 0x8e, 0xae,
-	0x5e, 0x87, 0xdf, 0xf9, 0xe8, 0x6f, 0x04, 0xce, 0x51, 0x04, 0x3f, 0x04, 0x73, 0x23, 0xb7, 0xb2,
-	0xd2, 0xbf, 0xb0, 0x59, 0xfb, 0x31, 0x42, 0x30, 0x19, 0x25, 0x78, 0x07, 0x67, 0x52, 0xfd, 0xe0,
-	0xd5, 0xa5, 0x14, 0x8a, 0x8b, 0xb4, 0xb9, 0xc2, 0xe9, 0x1d, 0x28, 0xa7, 0x09, 0x74, 0x0f, 0x56,
-	0xc7, 0x82, 0xc1, 0x68, 0xae, 0xab, 0x43, 0xd1, 0xe7, 0xa6, 0xc7, 0x4c, 0x1b, 0x35, 0xc1, 0xf2,
-	0xa8, 0x70, 0x9b, 0x16, 0x7c, 0xd0, 0x71, 0xd6, 0xf9, 0xe8, 0x33, 0xb0, 0x5a, 0x05, 0xcf, 0xc1,
-	0x58, 0x5f, 0x7c, 0x0a, 0xdd, 0x7b, 0x18, 0xc0, 0x7a, 0x1f, 0xea, 0x33, 0xc2, 0x36, 0x98, 0x9f,
-	0xe3, 0x8f, 0x21, 0x73, 0x27, 0xf4, 0x0f, 0x02, 0x38, 0x0c, 0x6c, 0xf4, 0xff, 0xff, 0x1d, 0x1c,
-	0x7e, 0x03, 0x46, 0x21, 0x53, 0x4e, 0x0c, 0xcd, 0xf6, 0x64, 0x74, 0x0f, 0x06, 0xc7, 0xb5, 0x4c,
-	0x39, 0xd3, 0x19, 0x4d, 0xdd, 0x76, 0x26, 0xd1, 0xae, 0x20, 0x66, 0x5b, 0xb7, 0x17, 0x0e, 0x53,
-	0xb1, 0xbc, 0x69, 0x3f, 0x15, 0xea, 0xc3, 0xf2, 0xb8, 0x16, 0xbe, 0x0f, 0xf3, 0xab, 0xeb, 0x9b,
-	0xf8, 0x22, 0xba, 0x6c, 0xba, 0x9c, 0x83, 0x11, 0x5f, 0xaf, 0x43, 0x17, 0xad, 0x7e, 0xc2, 0xec,
-	0xa6, 0x05, 0xc1, 0x6f, 0xc1, 0x89, 0xf8, 0xed, 0xa0, 0xcb, 0xf1, 0x6d, 0x3d, 0x1f, 0x97, 0xf1,
-	0x0b, 0x98, 0x45, 0xfc, 0x56, 0xaf, 0xe5, 0xd9, 0xc0, 0xd1, 0x08, 0xe7, 0xee, 0x40, 0xd0, 0x6f,
-	0xea, 0x9b, 0xa5, 0x9f, 0xdb, 0xab, 0xbf, 0x01, 0x00, 0x00, 0xff, 0xff, 0xba, 0x8c, 0x13, 0xb7,
-	0x7f, 0x03, 0x00, 0x00,
+	// 625 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x54, 0x41, 0x6f, 0xda, 0x30,
+	0x14, 0x9e, 0x81, 0x04, 0x78, 0x14, 0xca, 0xac, 0x1e, 0xa2, 0x6a, 0xab, 0x58, 0x54, 0x4d, 0xe9,
+	0x0e, 0x54, 0x63, 0xc7, 0x9d, 0x10, 0xa5, 0x6b, 0xa5, 0x95, 0x6d, 0x2e, 0xed, 0xae, 0x0b, 0xc4,
+	0x05, 0x4b, 0x60, 0x47, 0xb6, 0xd3, 0xaa, 0xfb, 0x09, 0xfb, 0x77, 0xd3, 0xee, 0xfb, 0x2d, 0x93,
+	0x9d, 0x94, 0xa4, 0x19, 0xed, 0xcd, 0xef, 0x7b, 0x5f, 0xde, 0xfb, 0xde, 0xf7, 0xec, 0x40, 0x5b,
+	0xc5, 0x92, 0x71, 0xad, 0xfa, 0xb1, 0x14, 0x5a, 0xe0, 0x4a, 0x3c, 0xf3, 0xeb, 0xe0, 0x8c, 0xd7,
+	0xb1, 0xbe, 0xf7, 0x7f, 0x42, 0x8d, 0x84, 0x73, 0x8a, 0x0f, 0xa1, 0x1e, 0xaf, 0xc2, 0x7b, 0x2a,
+	0x95, 0x87, 0x7a, 0xd5, 0xa0, 0x35, 0x80, 0x7e, 0x3c, 0xeb, 0x7f, 0xb5, 0x10, 0x79, 0x48, 0xe1,
+	0x3e, 0x80, 0x16, 0x89, 0xe4, 0xe1, 0x9a, 0x72, 0xed, 0x55, 0x7a, 0x28, 0x68, 0x0d, 0x3a, 0x86,
+	0x38, 0xdd, 0xa0, 0xa4, 0xc0, 0xc0, 0xaf, 0xa0, 0x19, 0x51, 0xa5, 0xaf, 0xc3, 0x55, 0x42, 0xbd,
+	0x6a, 0x0f, 0x05, 0x0e, 0xc9, 0x01, 0xff, 0x07, 0xb4, 0x4e, 0xe8, 0x0d, 0xe3, 0x34, 0xb2, 0x12,
+	0xde, 0x42, 0x47, 0x86, 0x73, 0xaa, 0x08, 0x5d, 0x87, 0x8c, 0x33, 0xbe, 0xf0, 0x50, 0x0f, 0x05,
+	0x6d, 0x52, 0x42, 0xf1, 0x11, 0xb8, 0xa9, 0x1e, 0xaf, 0x62, 0x95, 0xbe, 0x34, 0x02, 0xb2, 0x42,
+	0x99, 0xe0, 0x8c, 0xe0, 0xff, 0x42, 0xd0, 0x7e, 0x94, 0xc1, 0x7b, 0xe0, 0xcc, 0xc5, 0x4a, 0x48,
+	0x5b, 0xbb, 0x49, 0xd2, 0x60, 0x4b, 0xeb, 0xca, 0xd6, 0xd6, 0x1f, 0x61, 0x57, 0xe8, 0x25, 0x95,
+	0x23, 0xc1, 0x35, 0xe5, 0x91, 0x71, 0xab, 0xfa, 0x94, 0x86, 0x32, 0xd3, 0x97, 0xe0, 0x66, 0x22,
+	0x30, 0xd4, 0x8c, 0x41, 0x99, 0x06, 0x7b, 0x36, 0x53, 0x2d, 0x2c, 0xd1, 0xb6, 0xee, 0xa4, 0x15,
+	0x53, 0x7e, 0xff, 0x93, 0x4d, 0x90, 0x8c, 0xe0, 0x1f, 0x81, 0x9b, 0x22, 0xb8, 0x01, 0xb5, 0x8b,
+	0xe1, 0xe7, 0x71, 0xf7, 0x05, 0x06, 0x70, 0x4f, 0xc7, 0xf6, 0x8c, 0x70, 0x13, 0x9c, 0x2f, 0xd3,
+	0xb3, 0x31, 0xe9, 0x56, 0xfc, 0x21, 0x38, 0xc6, 0x5b, 0x69, 0x36, 0x91, 0x7a, 0x32, 0x49, 0xd6,
+	0xb6, 0xaf, 0x43, 0x72, 0x00, 0xef, 0x43, 0x23, 0x62, 0x4a, 0x87, 0x7c, 0x4e, 0x6d, 0x7b, 0x87,
+	0x6c, 0x62, 0xff, 0x0f, 0x02, 0xc8, 0xd7, 0xbb, 0x55, 0xfb, 0xb3, 0x6b, 0xc6, 0xef, 0xa1, 0xb6,
+	0x16, 0x11, 0xf5, 0x6a, 0x76, 0xae, 0xd7, 0x8f, 0xaf, 0x4b, 0xe1, 0x78, 0x21, 0x22, 0x4a, 0x2c,
+	0x15, 0xf7, 0xa0, 0x95, 0x8a, 0x1b, 0x89, 0x84, 0x6b, 0xcf, 0xb1, 0x25, 0x8b, 0x50, 0xbe, 0x47,
+	0xb7, 0x57, 0xdd, 0xec, 0xd1, 0x0f, 0xa0, 0xf3, 0xb8, 0x1e, 0xde, 0x81, 0xc6, 0xc9, 0xf9, 0xe5,
+	0x74, 0x38, 0x19, 0x19, 0x97, 0x1a, 0x50, 0x9b, 0x9e, 0x5f, 0x8c, 0xbb, 0xc8, 0xff, 0x8b, 0xa0,
+	0x7b, 0xcd, 0xd4, 0x48, 0xf0, 0x1b, 0xb6, 0x48, 0x64, 0xa8, 0x99, 0xe0, 0xc6, 0x86, 0xa5, 0x50,
+	0x7a, 0x92, 0xcf, 0xb7, 0x89, 0xb1, 0x07, 0xf5, 0x5b, 0xa6, 0x6c, 0xaa, 0x62, 0x53, 0x0f, 0x21,
+	0x3e, 0x00, 0xb8, 0x49, 0x56, 0x2b, 0x35, 0x97, 0x94, 0x72, 0x3b, 0x7e, 0x83, 0x14, 0x10, 0x1c,
+	0xc0, 0xae, 0xa4, 0x4a, 0xac, 0x12, 0xd3, 0xe3, 0x3b, 0x8b, 0xf4, 0xd2, 0x5a, 0xd1, 0x26, 0x65,
+	0x18, 0xbf, 0x83, 0x6e, 0x0e, 0x9d, 0x51, 0xb6, 0x58, 0xa6, 0xb3, 0xb7, 0xc9, 0x7f, 0xb8, 0xe9,
+	0xba, 0x16, 0xb7, 0x8c, 0x2f, 0xae, 0x38, 0xd3, 0x9e, 0x6b, 0x59, 0x05, 0x64, 0xf0, 0x1b, 0x41,
+	0xfd, 0x32, 0x7d, 0xf7, 0xf8, 0x18, 0xda, 0x13, 0x7a, 0x57, 0x58, 0x62, 0xe9, 0xcd, 0xee, 0x97,
+	0x62, 0x7c, 0x00, 0xf5, 0x09, 0xbd, 0xb3, 0xaf, 0xb2, 0x61, 0x52, 0xe6, 0xb4, 0xdf, 0x34, 0x27,
+	0xfb, 0xd7, 0xc0, 0x6f, 0xa0, 0x79, 0xa9, 0x43, 0xa9, 0x2d, 0x23, 0xc7, 0x4b, 0x94, 0xe1, 0x4c,
+	0x3c, 0x4b, 0x39, 0x86, 0x9d, 0x07, 0xff, 0xe9, 0x35, 0x53, 0x78, 0xcf, 0xa4, 0xca, 0x4b, 0x29,
+	0x7c, 0x30, 0xf8, 0x96, 0xde, 0x66, 0x85, 0x0f, 0x01, 0xae, 0xe2, 0x28, 0xd4, 0x34, 0xaf, 0x6e,
+	0xaf, 0x79, 0x81, 0x1c, 0x20, 0xec, 0x03, 0x9c, 0x32, 0xce, 0xd4, 0xf2, 0x69, 0x0d, 0x33, 0xd7,
+	0xfe, 0x13, 0x3f, 0xfc, 0x0b, 0x00, 0x00, 0xff, 0xff, 0x25, 0x21, 0x33, 0xe2, 0x24, 0x05, 0x00,
+	0x00,
 }

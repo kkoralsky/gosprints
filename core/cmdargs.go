@@ -16,42 +16,48 @@ type cliSetup interface {
 type ServerConfig struct {
 	RollerCircum       float64
 	DestValue          uint
-	MovingUnit         uint
-	VisName            string
 	SamplingRate       uint
 	FailstartThreshold uint
-	VisPort            uint
-	CmdPort            uint
+	Port               uint
 	RaceMode           rune
 	raceMode           string
 	InputDevice        string
+	OutputVisuals      string
 	GrpcDebug          bool
 	Fullscreen         bool
 }
 
-// ClientConfig is client configuration struct
-type ClientConfig struct {
-	ServerAddr string
-	MovingUnit uint
-	VisName    string
+// VisualConfig is visual configuration struct
+type VisualConfig struct {
+	Port             uint
+	HostName         string
+	MovingUnit       uint
+	VisName          string
+	Fullscreen       bool
+	ResolutionWidth  uint
+	ResolutionHeight uint
 }
 
 var (
 	defaultServerConfig = ServerConfig{
 		RollerCircum:       .00025,
 		DestValue:          400,
-		MovingUnit:         1,
 		SamplingRate:       5,
 		FailstartThreshold: 5,
-		VisPort:            9998,
-		CmdPort:            9999,
+		Port:               9999,
 		RaceMode:           't',
 		InputDevice:        "SHM:5,6",
+		OutputVisuals:      "localhost:9998",
 		GrpcDebug:          false,
-		Fullscreen:         false,
 	}
-	defaultClientConfig = ClientConfig{
-		ServerAddr: "goldie1:9998",
+	defaultVisConfig = VisualConfig{
+		Port:             9998,
+		HostName:         "vision",
+		VisName:          "bar",
+		MovingUnit:       1,
+		Fullscreen:       false,
+		ResolutionWidth:  640,
+		ResolutionHeight: 480,
 	}
 )
 
@@ -66,21 +72,19 @@ func (s *ServerConfig) Setup() *flag.FlagSet {
 		"roller circum in km")
 	cfg.UintVar(&s.DestValue, "dest_value", defaultServerConfig.DestValue,
 		"destination value to reach during a race")
-	cfg.UintVar(&s.MovingUnit, "moving_unit", defaultServerConfig.MovingUnit,
-		"how many pixels to move in animation on one -sampling_rate")
 	cfg.UintVar(&s.SamplingRate, "sampling_rate", defaultServerConfig.SamplingRate,
 		"how many wheel turnovers causes animation to move")
 	cfg.UintVar(&s.FailstartThreshold, "failstart_threshold",
 		defaultServerConfig.FailstartThreshold,
 		"how many wheel turnovers is acceptable during countdown")
-	cfg.UintVar(&s.VisPort, "vis_port", defaultServerConfig.VisPort,
-		"UDP port for remote visualizations")
-	cfg.UintVar(&s.CmdPort, "cmd_port", defaultServerConfig.CmdPort,
+	cfg.UintVar(&s.Port, "port", defaultServerConfig.Port,
 		"TCP port for remote race control")
 	cfg.StringVar(&s.raceMode, "race_mode", string(defaultServerConfig.RaceMode),
 		"race mode: either t for time constrained race or d for distance constrained")
 	cfg.StringVar(&s.InputDevice, "input_device", defaultServerConfig.InputDevice,
 		"in the form: <type>:<device1_spec>,<device2_spec>,...")
+	cfg.StringVar(&s.OutputVisuals, "visuals", defaultServerConfig.OutputVisuals,
+		"comma seperated output visual addresses ie. ip:port,hostname:port etc.")
 	cfg.BoolVar(&s.GrpcDebug, "grpc_debug", defaultServerConfig.GrpcDebug,
 		"run GRPC server in debug mode")
 	cfg.BoolVar(&s.Fullscreen, "fullscreen", defaultServerConfig.Fullscreen,
@@ -108,15 +112,31 @@ func (s *ServerConfig) Validate() (errs []error) {
 	return
 }
 
-// Setup maps command line options into ClientConfig struct
-func (c *ClientConfig) Setup() *flag.FlagSet {
-	cfg := flag.NewFlagSet("server", flag.ExitOnError)
+// Setup maps command line options into VisualConfig struct
+func (c *VisualConfig) Setup() *flag.FlagSet {
+	hostName, err := os.Hostname()
+	if err != nil {
+		hostName = defaultVisConfig.HostName
+	}
+	cfg := flag.NewFlagSet("visual", flag.ExitOnError)
 	cfg.Usage = func() {
-		fmt.Printf("\nclient configuration\n")
+		fmt.Printf("\nvisual configuration\n")
 		cfg.PrintDefaults()
 	}
-	cfg.StringVar(&c.ServerAddr, "server_addr", defaultClientConfig.ServerAddr,
-		"server address in host:port format")
+	cfg.UintVar(&c.Port, "port", defaultVisConfig.Port,
+		"TCP port for GRPC communication w/ \"server\"")
+	cfg.StringVar(&c.HostName, "name", hostName,
+		"vision instance identification")
+	cfg.StringVar(&c.VisName, "vis_name", defaultVisConfig.VisName,
+		"visual name")
+	cfg.UintVar(&c.MovingUnit, "moving_unit", defaultVisConfig.MovingUnit,
+		"how many pixels to move in animation on one -sampling_rate")
+	cfg.BoolVar(&c.Fullscreen, "fullscreen", defaultVisConfig.Fullscreen,
+		"run visualization in fullscreen mode")
+	cfg.UintVar(&c.ResolutionWidth, "width", defaultVisConfig.ResolutionWidth,
+		"visualisation window/screen width in pixels")
+	cfg.UintVar(&c.ResolutionHeight, "height", defaultVisConfig.ResolutionHeight,
+		"visualization window/screen height in pixels")
 
 	return cfg
 }

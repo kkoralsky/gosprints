@@ -18,7 +18,7 @@ type InputDevice interface {
 
 // SetupDevice parses device configuration string and returns proper InputDevice interface
 // implementation already initiaited
-func SetupDevice(deviceConf string, samplingRate uint, failstartThreshold uint) (InputDevice, error) {
+func SetupDevice(deviceConf string, samplingRate uint, failstartThreshold uint) (*InputDevice, error) {
 	var (
 		device InputDevice
 	)
@@ -35,5 +35,5 @@ func SetupDevice(deviceConf string, samplingRate uint, failstartThreshold uint) 
 		return nil, errors.Wrap(err, "device initialization")
 	}
 
-	return device, nil
+	return &device, nil
 }
