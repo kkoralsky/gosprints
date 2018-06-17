@@ -15,8 +15,33 @@
 package main
 
 import (
+	"os"
+
+	"github.com/therecipe/qt/core"
 	"github.com/therecipe/qt/gui"
+	"github.com/therecipe/qt/quick"
 )
 
+var addr = "localhost:9999"
+
 func main() {
+	core.QCoreApplication_SetAttribute(core.Qt__AA_EnableHighDpiScaling, true)
+
+	gui.NewQGuiApplication(len(os.Args), os.Args)
+
+	var view = quick.NewQQuickView(nil)
+	view.SetResizeMode(quick.QQuickView__SizeRootObjectToView)
+
+	sprintsClient, err := SetupSprintsClient(addr)
+	if err != nil {
+		panic(err)
+	}
+
+	view.RootContext().SetContextProperty("SprintsClient", sprintsClient)
+	view.SetSource(core.NewQUrl3("qrc:/qml/main.qml", 0))
+
+	view.Show()
+
+	gui.QGuiApplication_Exec()
+
 }
