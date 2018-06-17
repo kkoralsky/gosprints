@@ -18,6 +18,7 @@ type CmdServer struct {
 func (c *CmdServer) Run() {
 	defer c.tcpListener.Close()
 	c.grpcServer.Serve(c.tcpListener)
+	c.grpcServer.Stop()
 }
 
 func SetupCmdServer(port uint, debug bool, sprints *Sprints) (*CmdServer, error) {
