@@ -22,7 +22,7 @@ message Empty {}
 message Race {
     repeated Player players = 1; 
     Tournament tournament = 2;
-    int32 destValue = 3;
+    uint32 destValue = 3;
 }
 
 message DefinedRace {
@@ -50,15 +50,15 @@ message Player {
 }
 
 message Racer {
-    int32 playerNum = 1;
-    int32 distance = 2;
+    uint32 playerNum = 1;
+    uint32 distance = 2;
 }
 
 message Tournament {
     string name = 1;
-    int32 destValue = 3;
+    uint32 destValue = 3;
     TournamentMode mode = 4;
-    int32 playerCount = 5;
+    uint32 playerCount = 5;
     repeated string color = 6;
 
     enum TournamentMode {
