@@ -31,14 +31,19 @@ func (s *Sprints) NewRace(ctx context.Context, race *pb.Race) (*pb.Empty, error)
 }
 
 func (s *Sprints) StartRace(context.Context, *pb.Empty) (*pb.Empty, error) {
+	s.visClient.StartRace()
 
 	return &pb.Empty{}, nil
 }
 
 func (s *Sprints) AbortRace(context.Context, *pb.Empty) (*pb.Empty, error) {
+	s.visClient.AbortRace()
+
 	return &pb.Empty{}, nil
 }
 
-func (s *Sprints) ConfigureVis(context.Context, *pb.VisConfiguration) (*pb.Empty, error) {
+func (s *Sprints) ConfigureVis(context.Context, visCfg *pb.VisConfiguration) (*pb.Empty, error) {
+	s.visClient.ConfigureVis(visCfg)
+
 	return &pb.Empty{}, nil
 }
