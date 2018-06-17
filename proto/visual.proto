@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package gosprints;
-
-message PoorManRpc {
-    string call
-    args 
-}
-
