@@ -32,10 +32,7 @@ func main() {
 	var view = quick.NewQQuickView(nil)
 	view.SetResizeMode(quick.QQuickView__SizeRootObjectToView)
 
-	sprintsClient, err := SetupSprintsClient(addr)
-	if err != nil {
-		panic(err)
-	}
+	sprintsClient := SetupSprintsClient(addr)
 
 	view.RootContext().SetContextProperty("SprintsClient", sprintsClient)
 	view.SetSource(core.NewQUrl3("qrc:/qml/main.qml", 0))
@@ -44,4 +41,5 @@ func main() {
 
 	gui.QGuiApplication_Exec()
 
+	sprintsClient.Close()
 }

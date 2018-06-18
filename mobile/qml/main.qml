@@ -26,4 +26,5 @@ Rectangle
 		anchors.fill: parent
 		onClicked: SprintsClient.newRace(["hello", "world"], 30)
 	}
+    Component.onCompleted: console.log(SprintsClient.dialGrpc("localhost", 9999))
 }

@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	//"fmt"
 	log "github.com/kkoralsky/gosprints/core"
 	pb "github.com/kkoralsky/gosprints/proto"
 	"github.com/therecipe/qt/core"
 	"google.golang.org/grpc"
+	//"google.golang.org/grpc/connectivity"
 	"time"
 )
 
@@ -22,32 +24,49 @@ type SprintsClient struct {
 	_ func(err, msg string) `signal:"error"`
 	_ func(msg string)      `signal:"success"`
 
-	_ func(string, uint, rune, uint, []string) string `slot:"newTournament"`
-	_ func([]string, uint) string                     `slot:"newRace"`
-	_ func() string                                   `slot:"startRace"`
-	_ func() string                                   `slot:"abortRace"`
-	_ func(hostNname string, visName string, fullscreen bool, resolutionWidth uint,
-		resolutionHeight uint, movingUnit uint) string `slot:"configureVis"`
+	_ func(string, uint) string                           `slot:"dialGrpc"`
+	_ func(string, uint, rune, uint, []string) string     `slot:"newTournament"`
+	_ func([]string, uint) string                         `slot:"newRace"`
+	_ func() string                                       `slot:"startRace"`
+	_ func() string                                       `slot:"abortRace"`
+	_ func(string, string, bool, uint, uint, uint) string `slot:"configureVis"`
 }
 
-// New creates a new HelloClient with the endpoint addr.
-func SetupSprintsClient(addr string) (*SprintsClient, error) {
-	var err error
+func SetupSprintsClient(addr string) *SprintsClient {
 	client := NewSprintsClient(nil)
 
-	client.conn, err = grpc.Dial(addr, grpc.WithInsecure(), grpc.WithTimeout(10*time.Second))
-	if err != nil {
-		return nil, err
-	}
-	client.client = pb.NewSprintsClient(client.conn)
-
+	client.ConnectDialGrpc(client.CallDialGrpc)
 	client.ConnectNewTournament(client.CallNewTournament)
 	client.ConnectNewRace(client.CallNewRace)
 	client.ConnectStartRace(client.CallStartRace)
 	client.ConnectAbortRace(client.CallAbortRace)
 	client.ConnectConfigureVis(client.CallConfigureVis)
 
-	return client, nil
+	return client
+}
+
+func (s *SprintsClient) CallDialGrpc(hostName string, port uint) string {
+	var (
+		err error
+	)
+
+	s.conn, err = grpc.Dial(addr, grpc.WithInsecure(), grpc.WithTimeout(10*time.Second), grpc.WithBlock())
+	if err != nil {
+		return err.Error()
+	}
+
+	s.client = pb.NewSprintsClient(s.conn)
+
+	//ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	//for client.conn.WaitForStateChange(ctx, connState) && connState != connectivity.Ready {
+	//connState = client.conn.GetState()
+	//}
+
+	//if connState != connectivity.Ready {
+	//return nil, fmt.Errorf("couldnt connect to %s in 10 seconds connection state: %s", addr, connState.String())
+	//}
+
+	return ""
 }
 
 func (s *SprintsClient) CallNewTournament(name string, destValue uint, mode rune, playerCount uint, colors []string) string {
@@ -112,4 +131,14 @@ func (s *SprintsClient) CallConfigureVis(hostName string, visName string, fullsc
 		return err.Error()
 	}
 	return ""
+}
+
+func (s *SprintsClient) Close() error {
+	if s.conn != nil {
+		err := s.conn.Close()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
