@@ -9,10 +9,15 @@ It is generated from these files:
 
 It has these top-level messages:
 	Empty
+	AbortMessage
 	Race
 	DefinedRace
+	Results
+	Result
 	DefinedPlayer
+	ResultSpec
 	Player
+	Starter
 	Racer
 	Tournament
 	VisConfiguration
@@ -39,29 +44,29 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
-type Player_Gender int32
+type Gender int32
 
 const (
-	Player_MALE   Player_Gender = 0
-	Player_FEMALE Player_Gender = 1
-	Player_OTHER  Player_Gender = 2
+	Gender_MALE   Gender = 0
+	Gender_FEMALE Gender = 1
+	Gender_OTHER  Gender = 2
 )
 
-var Player_Gender_name = map[int32]string{
+var Gender_name = map[int32]string{
 	0: "MALE",
 	1: "FEMALE",
 	2: "OTHER",
 }
-var Player_Gender_value = map[string]int32{
+var Gender_value = map[string]int32{
 	"MALE":   0,
 	"FEMALE": 1,
 	"OTHER":  2,
 }
 
-func (x Player_Gender) String() string {
-	return proto.EnumName(Player_Gender_name, int32(x))
+func (x Gender) String() string {
+	return proto.EnumName(Gender_name, int32(x))
 }
-func (Player_Gender) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, []int{4, 0} }
+func (Gender) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
 
 type Tournament_TournamentMode int32
 
@@ -82,7 +87,9 @@ var Tournament_TournamentMode_value = map[string]int32{
 func (x Tournament_TournamentMode) String() string {
 	return proto.EnumName(Tournament_TournamentMode_name, int32(x))
 }
-func (Tournament_TournamentMode) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, []int{6, 0} }
+func (Tournament_TournamentMode) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor0, []int{11, 0}
+}
 
 type Empty struct {
 }
@@ -92,27 +99,35 @@ func (m *Empty) String() string            { return proto.CompactTextString(m) }
 func (*Empty) ProtoMessage()               {}
 func (*Empty) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
 
+type AbortMessage struct {
+	Message string `protobuf:"bytes,1,opt,name=message" json:"message,omitempty"`
+}
+
+func (m *AbortMessage) Reset()                    { *m = AbortMessage{} }
+func (m *AbortMessage) String() string            { return proto.CompactTextString(m) }
+func (*AbortMessage) ProtoMessage()               {}
+func (*AbortMessage) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
+
+func (m *AbortMessage) GetMessage() string {
+	if m != nil {
+		return m.Message
+	}
+	return ""
+}
+
 type Race struct {
-	Players    []*Player   `protobuf:"bytes,1,rep,name=players" json:"players,omitempty"`
-	Tournament *Tournament `protobuf:"bytes,2,opt,name=tournament" json:"tournament,omitempty"`
-	DestValue  uint32      `protobuf:"varint,3,opt,name=destValue" json:"destValue,omitempty"`
+	Players   []*Player `protobuf:"bytes,1,rep,name=players" json:"players,omitempty"`
+	DestValue uint32    `protobuf:"varint,2,opt,name=destValue" json:"destValue,omitempty"`
 }
 
 func (m *Race) Reset()                    { *m = Race{} }
 func (m *Race) String() string            { return proto.CompactTextString(m) }
 func (*Race) ProtoMessage()               {}
-func (*Race) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
+func (*Race) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
 
 func (m *Race) GetPlayers() []*Player {
 	if m != nil {
 		return m.Players
-	}
-	return nil
-}
-
-func (m *Race) GetTournament() *Tournament {
-	if m != nil {
-		return m.Tournament
 	}
 	return nil
 }
@@ -133,7 +148,7 @@ type DefinedRace struct {
 func (m *DefinedRace) Reset()                    { *m = DefinedRace{} }
 func (m *DefinedRace) String() string            { return proto.CompactTextString(m) }
 func (*DefinedRace) ProtoMessage()               {}
-func (*DefinedRace) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
+func (*DefinedRace) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
 
 func (m *DefinedRace) GetRacesRemaining() uint32 {
 	if m != nil {
@@ -149,6 +164,54 @@ func (m *DefinedRace) GetPlayer() []*DefinedPlayer {
 	return nil
 }
 
+type Results struct {
+	Result []*Result `protobuf:"bytes,1,rep,name=result" json:"result,omitempty"`
+}
+
+func (m *Results) Reset()                    { *m = Results{} }
+func (m *Results) String() string            { return proto.CompactTextString(m) }
+func (*Results) ProtoMessage()               {}
+func (*Results) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{4} }
+
+func (m *Results) GetResult() []*Result {
+	if m != nil {
+		return m.Result
+	}
+	return nil
+}
+
+type Result struct {
+	Player    *Player `protobuf:"bytes,1,opt,name=player" json:"player,omitempty"`
+	Result    float32 `protobuf:"fixed32,2,opt,name=result" json:"result,omitempty"`
+	DestValue uint32  `protobuf:"varint,3,opt,name=destValue" json:"destValue,omitempty"`
+}
+
+func (m *Result) Reset()                    { *m = Result{} }
+func (m *Result) String() string            { return proto.CompactTextString(m) }
+func (*Result) ProtoMessage()               {}
+func (*Result) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{5} }
+
+func (m *Result) GetPlayer() *Player {
+	if m != nil {
+		return m.Player
+	}
+	return nil
+}
+
+func (m *Result) GetResult() float32 {
+	if m != nil {
+		return m.Result
+	}
+	return 0
+}
+
+func (m *Result) GetDestValue() uint32 {
+	if m != nil {
+		return m.DestValue
+	}
+	return 0
+}
+
 type DefinedPlayer struct {
 	Color           string           `protobuf:"bytes,1,opt,name=color" json:"color,omitempty"`
 	RacesRemaining  uint32           `protobuf:"varint,2,opt,name=racesRemaining" json:"racesRemaining,omitempty"`
@@ -158,7 +221,7 @@ type DefinedPlayer struct {
 func (m *DefinedPlayer) Reset()                    { *m = DefinedPlayer{} }
 func (m *DefinedPlayer) String() string            { return proto.CompactTextString(m) }
 func (*DefinedPlayer) ProtoMessage()               {}
-func (*DefinedPlayer) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
+func (*DefinedPlayer) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{6} }
 
 func (m *DefinedPlayer) GetColor() string {
 	if m != nil {
@@ -181,15 +244,47 @@ func (m *DefinedPlayer) GetOtherContenders() []*DefinedPlayer {
 	return nil
 }
 
+type ResultSpec struct {
+	Gender         Gender `protobuf:"varint,1,opt,name=gender,enum=pb.Gender" json:"gender,omitempty"`
+	Last           uint32 `protobuf:"varint,2,opt,name=last" json:"last,omitempty"`
+	TournamentName string `protobuf:"bytes,3,opt,name=tournamentName" json:"tournamentName,omitempty"`
+}
+
+func (m *ResultSpec) Reset()                    { *m = ResultSpec{} }
+func (m *ResultSpec) String() string            { return proto.CompactTextString(m) }
+func (*ResultSpec) ProtoMessage()               {}
+func (*ResultSpec) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{7} }
+
+func (m *ResultSpec) GetGender() Gender {
+	if m != nil {
+		return m.Gender
+	}
+	return Gender_MALE
+}
+
+func (m *ResultSpec) GetLast() uint32 {
+	if m != nil {
+		return m.Last
+	}
+	return 0
+}
+
+func (m *ResultSpec) GetTournamentName() string {
+	if m != nil {
+		return m.TournamentName
+	}
+	return ""
+}
+
 type Player struct {
-	Name   string        `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
-	Gender Player_Gender `protobuf:"varint,2,opt,name=gender,enum=pb.Player_Gender" json:"gender,omitempty"`
+	Name   string `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
+	Gender Gender `protobuf:"varint,2,opt,name=gender,enum=pb.Gender" json:"gender,omitempty"`
 }
 
 func (m *Player) Reset()                    { *m = Player{} }
 func (m *Player) String() string            { return proto.CompactTextString(m) }
 func (*Player) ProtoMessage()               {}
-func (*Player) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{4} }
+func (*Player) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{8} }
 
 func (m *Player) GetName() string {
 	if m != nil {
@@ -198,11 +293,27 @@ func (m *Player) GetName() string {
 	return ""
 }
 
-func (m *Player) GetGender() Player_Gender {
+func (m *Player) GetGender() Gender {
 	if m != nil {
 		return m.Gender
 	}
-	return Player_MALE
+	return Gender_MALE
+}
+
+type Starter struct {
+	CountdownTime uint32 `protobuf:"varint,1,opt,name=countdownTime" json:"countdownTime,omitempty"`
+}
+
+func (m *Starter) Reset()                    { *m = Starter{} }
+func (m *Starter) String() string            { return proto.CompactTextString(m) }
+func (*Starter) ProtoMessage()               {}
+func (*Starter) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{9} }
+
+func (m *Starter) GetCountdownTime() uint32 {
+	if m != nil {
+		return m.CountdownTime
+	}
+	return 0
 }
 
 type Racer struct {
@@ -213,7 +324,7 @@ type Racer struct {
 func (m *Racer) Reset()                    { *m = Racer{} }
 func (m *Racer) String() string            { return proto.CompactTextString(m) }
 func (*Racer) ProtoMessage()               {}
-func (*Racer) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{5} }
+func (*Racer) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{10} }
 
 func (m *Racer) GetPlayerNum() uint32 {
 	if m != nil {
@@ -240,7 +351,7 @@ type Tournament struct {
 func (m *Tournament) Reset()                    { *m = Tournament{} }
 func (m *Tournament) String() string            { return proto.CompactTextString(m) }
 func (*Tournament) ProtoMessage()               {}
-func (*Tournament) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{6} }
+func (*Tournament) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{11} }
 
 func (m *Tournament) GetName() string {
 	if m != nil {
@@ -289,7 +400,7 @@ type VisConfiguration struct {
 func (m *VisConfiguration) Reset()                    { *m = VisConfiguration{} }
 func (m *VisConfiguration) String() string            { return proto.CompactTextString(m) }
 func (*VisConfiguration) ProtoMessage()               {}
-func (*VisConfiguration) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{7} }
+func (*VisConfiguration) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{12} }
 
 func (m *VisConfiguration) GetHostName() string {
 	if m != nil {
@@ -335,14 +446,19 @@ func (m *VisConfiguration) GetMovingUnit() uint32 {
 
 func init() {
 	proto.RegisterType((*Empty)(nil), "pb.Empty")
+	proto.RegisterType((*AbortMessage)(nil), "pb.AbortMessage")
 	proto.RegisterType((*Race)(nil), "pb.Race")
 	proto.RegisterType((*DefinedRace)(nil), "pb.DefinedRace")
+	proto.RegisterType((*Results)(nil), "pb.Results")
+	proto.RegisterType((*Result)(nil), "pb.Result")
 	proto.RegisterType((*DefinedPlayer)(nil), "pb.DefinedPlayer")
+	proto.RegisterType((*ResultSpec)(nil), "pb.ResultSpec")
 	proto.RegisterType((*Player)(nil), "pb.Player")
+	proto.RegisterType((*Starter)(nil), "pb.Starter")
 	proto.RegisterType((*Racer)(nil), "pb.Racer")
 	proto.RegisterType((*Tournament)(nil), "pb.Tournament")
 	proto.RegisterType((*VisConfiguration)(nil), "pb.VisConfiguration")
-	proto.RegisterEnum("pb.Player_Gender", Player_Gender_name, Player_Gender_value)
+	proto.RegisterEnum("pb.Gender", Gender_name, Gender_value)
 	proto.RegisterEnum("pb.Tournament_TournamentMode", Tournament_TournamentMode_name, Tournament_TournamentMode_value)
 }
 
@@ -359,9 +475,11 @@ const _ = grpc.SupportPackageIsVersion4
 type SprintsClient interface {
 	NewTournament(ctx context.Context, in *Tournament, opts ...grpc.CallOption) (*Tournament, error)
 	NewRace(ctx context.Context, in *Race, opts ...grpc.CallOption) (*Empty, error)
-	StartRace(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
-	AbortRace(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
+	StartRace(ctx context.Context, in *Starter, opts ...grpc.CallOption) (*Empty, error)
+	AbortRace(ctx context.Context, in *AbortMessage, opts ...grpc.CallOption) (*Empty, error)
 	ConfigureVis(ctx context.Context, in *VisConfiguration, opts ...grpc.CallOption) (*Empty, error)
+	GetResults(ctx context.Context, in *ResultSpec, opts ...grpc.CallOption) (Sprints_GetResultsClient, error)
+	GetTournaments(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Sprints_GetTournamentsClient, error)
 }
 
 type sprintsClient struct {
@@ -390,7 +508,7 @@ func (c *sprintsClient) NewRace(ctx context.Context, in *Race, opts ...grpc.Call
 	return out, nil
 }
 
-func (c *sprintsClient) StartRace(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error) {
+func (c *sprintsClient) StartRace(ctx context.Context, in *Starter, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
 	err := grpc.Invoke(ctx, "/pb.Sprints/StartRace", in, out, c.cc, opts...)
 	if err != nil {
@@ -399,7 +517,7 @@ func (c *sprintsClient) StartRace(ctx context.Context, in *Empty, opts ...grpc.C
 	return out, nil
 }
 
-func (c *sprintsClient) AbortRace(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error) {
+func (c *sprintsClient) AbortRace(ctx context.Context, in *AbortMessage, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
 	err := grpc.Invoke(ctx, "/pb.Sprints/AbortRace", in, out, c.cc, opts...)
 	if err != nil {
@@ -417,14 +535,80 @@ func (c *sprintsClient) ConfigureVis(ctx context.Context, in *VisConfiguration, 
 	return out, nil
 }
 
+func (c *sprintsClient) GetResults(ctx context.Context, in *ResultSpec, opts ...grpc.CallOption) (Sprints_GetResultsClient, error) {
+	stream, err := grpc.NewClientStream(ctx, &_Sprints_serviceDesc.Streams[0], c.cc, "/pb.Sprints/GetResults", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &sprintsGetResultsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Sprints_GetResultsClient interface {
+	Recv() (*Result, error)
+	grpc.ClientStream
+}
+
+type sprintsGetResultsClient struct {
+	grpc.ClientStream
+}
+
+func (x *sprintsGetResultsClient) Recv() (*Result, error) {
+	m := new(Result)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *sprintsClient) GetTournaments(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Sprints_GetTournamentsClient, error) {
+	stream, err := grpc.NewClientStream(ctx, &_Sprints_serviceDesc.Streams[1], c.cc, "/pb.Sprints/GetTournaments", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &sprintsGetTournamentsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Sprints_GetTournamentsClient interface {
+	Recv() (*Tournament, error)
+	grpc.ClientStream
+}
+
+type sprintsGetTournamentsClient struct {
+	grpc.ClientStream
+}
+
+func (x *sprintsGetTournamentsClient) Recv() (*Tournament, error) {
+	m := new(Tournament)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // Server API for Sprints service
 
 type SprintsServer interface {
 	NewTournament(context.Context, *Tournament) (*Tournament, error)
 	NewRace(context.Context, *Race) (*Empty, error)
-	StartRace(context.Context, *Empty) (*Empty, error)
-	AbortRace(context.Context, *Empty) (*Empty, error)
+	StartRace(context.Context, *Starter) (*Empty, error)
+	AbortRace(context.Context, *AbortMessage) (*Empty, error)
 	ConfigureVis(context.Context, *VisConfiguration) (*Empty, error)
+	GetResults(*ResultSpec, Sprints_GetResultsServer) error
+	GetTournaments(*Empty, Sprints_GetTournamentsServer) error
 }
 
 func RegisterSprintsServer(s *grpc.Server, srv SprintsServer) {
@@ -468,7 +652,7 @@ func _Sprints_NewRace_Handler(srv interface{}, ctx context.Context, dec func(int
 }
 
 func _Sprints_StartRace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Empty)
+	in := new(Starter)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -480,13 +664,13 @@ func _Sprints_StartRace_Handler(srv interface{}, ctx context.Context, dec func(i
 		FullMethod: "/pb.Sprints/StartRace",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SprintsServer).StartRace(ctx, req.(*Empty))
+		return srv.(SprintsServer).StartRace(ctx, req.(*Starter))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Sprints_AbortRace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Empty)
+	in := new(AbortMessage)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -498,7 +682,7 @@ func _Sprints_AbortRace_Handler(srv interface{}, ctx context.Context, dec func(i
 		FullMethod: "/pb.Sprints/AbortRace",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SprintsServer).AbortRace(ctx, req.(*Empty))
+		return srv.(SprintsServer).AbortRace(ctx, req.(*AbortMessage))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -519,6 +703,48 @@ func _Sprints_ConfigureVis_Handler(srv interface{}, ctx context.Context, dec fun
 		return srv.(SprintsServer).ConfigureVis(ctx, req.(*VisConfiguration))
 	}
 	return interceptor(ctx, in, info, handler)
+}
+
+func _Sprints_GetResults_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ResultSpec)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(SprintsServer).GetResults(m, &sprintsGetResultsServer{stream})
+}
+
+type Sprints_GetResultsServer interface {
+	Send(*Result) error
+	grpc.ServerStream
+}
+
+type sprintsGetResultsServer struct {
+	grpc.ServerStream
+}
+
+func (x *sprintsGetResultsServer) Send(m *Result) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Sprints_GetTournaments_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(Empty)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(SprintsServer).GetTournaments(m, &sprintsGetTournamentsServer{stream})
+}
+
+type Sprints_GetTournamentsServer interface {
+	Send(*Tournament) error
+	grpc.ServerStream
+}
+
+type sprintsGetTournamentsServer struct {
+	grpc.ServerStream
+}
+
+func (x *sprintsGetTournamentsServer) Send(m *Tournament) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 var _Sprints_serviceDesc = grpc.ServiceDesc{
@@ -546,7 +772,18 @@ var _Sprints_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Sprints_ConfigureVis_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "GetResults",
+			Handler:       _Sprints_GetResults_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "GetTournaments",
+			Handler:       _Sprints_GetTournaments_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "sprints.proto",
 }
 
@@ -554,7 +791,9 @@ var _Sprints_serviceDesc = grpc.ServiceDesc{
 
 type RacesClient interface {
 	UpdateRace(ctx context.Context, opts ...grpc.CallOption) (Races_UpdateRaceClient, error)
-	FinishRace(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
+	FinishRace(ctx context.Context, in *Results, opts ...grpc.CallOption) (*Empty, error)
+	ShowResults(ctx context.Context, in *Results, opts ...grpc.CallOption) (*Empty, error)
+	StopVis(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type racesClient struct {
@@ -599,9 +838,27 @@ func (x *racesUpdateRaceClient) CloseAndRecv() (*Empty, error) {
 	return m, nil
 }
 
-func (c *racesClient) FinishRace(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error) {
+func (c *racesClient) FinishRace(ctx context.Context, in *Results, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
 	err := grpc.Invoke(ctx, "/pb.Races/FinishRace", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *racesClient) ShowResults(ctx context.Context, in *Results, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := grpc.Invoke(ctx, "/pb.Races/ShowResults", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *racesClient) StopVis(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := grpc.Invoke(ctx, "/pb.Races/StopVis", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -612,7 +869,9 @@ func (c *racesClient) FinishRace(ctx context.Context, in *Empty, opts ...grpc.Ca
 
 type RacesServer interface {
 	UpdateRace(Races_UpdateRaceServer) error
-	FinishRace(context.Context, *Empty) (*Empty, error)
+	FinishRace(context.Context, *Results) (*Empty, error)
+	ShowResults(context.Context, *Results) (*Empty, error)
+	StopVis(context.Context, *Empty) (*Empty, error)
 }
 
 func RegisterRacesServer(s *grpc.Server, srv RacesServer) {
@@ -646,7 +905,7 @@ func (x *racesUpdateRaceServer) Recv() (*Racer, error) {
 }
 
 func _Races_FinishRace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Empty)
+	in := new(Results)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -658,7 +917,43 @@ func _Races_FinishRace_Handler(srv interface{}, ctx context.Context, dec func(in
 		FullMethod: "/pb.Races/FinishRace",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RacesServer).FinishRace(ctx, req.(*Empty))
+		return srv.(RacesServer).FinishRace(ctx, req.(*Results))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Races_ShowResults_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Results)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RacesServer).ShowResults(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Races/ShowResults",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RacesServer).ShowResults(ctx, req.(*Results))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Races_StopVis_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RacesServer).StopVis(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Races/StopVis",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RacesServer).StopVis(ctx, req.(*Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -670,6 +965,14 @@ var _Races_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FinishRace",
 			Handler:    _Races_FinishRace_Handler,
+		},
+		{
+			MethodName: "ShowResults",
+			Handler:    _Races_ShowResults_Handler,
+		},
+		{
+			MethodName: "StopVis",
+			Handler:    _Races_StopVis_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
@@ -685,44 +988,56 @@ var _Races_serviceDesc = grpc.ServiceDesc{
 func init() { proto.RegisterFile("sprints.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
-	// 620 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x54, 0x4d, 0x6f, 0xd3, 0x40,
-	0x10, 0xc5, 0xf9, 0x70, 0x92, 0x49, 0x93, 0x86, 0x51, 0x0f, 0x56, 0x05, 0x55, 0xb0, 0x2a, 0x94,
-	0x72, 0x48, 0x45, 0x38, 0x72, 0x8a, 0xd2, 0x94, 0x56, 0xa2, 0x01, 0xdc, 0xb4, 0x5c, 0x71, 0xe2,
-	0x6d, 0xb2, 0x92, 0xbd, 0x6b, 0xed, 0xae, 0x5b, 0x95, 0x9f, 0xc0, 0xbf, 0x43, 0xdc, 0xf9, 0x2d,
-	0x68, 0xd7, 0x4e, 0xec, 0x9a, 0xb6, 0xb7, 0x9d, 0x37, 0xcf, 0x33, 0x6f, 0xde, 0xec, 0x1a, 0x3a,
-	0x32, 0x16, 0x94, 0x29, 0x39, 0x8c, 0x05, 0x57, 0x1c, 0x2b, 0xf1, 0xc2, 0x6d, 0x40, 0x7d, 0x1a,
-	0xc5, 0xea, 0xde, 0xfd, 0x09, 0x35, 0xcf, 0x5f, 0x12, 0x3c, 0x84, 0x46, 0x1c, 0xfa, 0xf7, 0x44,
-	0x48, 0xc7, 0xea, 0x57, 0x07, 0xed, 0x11, 0x0c, 0xe3, 0xc5, 0xf0, 0xab, 0x81, 0xbc, 0x4d, 0x0a,
-	0x87, 0x00, 0x8a, 0x27, 0x82, 0xf9, 0x11, 0x61, 0xca, 0xa9, 0xf4, 0xad, 0x41, 0x7b, 0xd4, 0xd5,
-	0xc4, 0xf9, 0x16, 0xf5, 0x0a, 0x0c, 0x7c, 0x05, 0xad, 0x80, 0x48, 0x75, 0xed, 0x87, 0x09, 0x71,
-	0xaa, 0x7d, 0x6b, 0xd0, 0xf1, 0x72, 0xc0, 0xfd, 0x01, 0xed, 0x13, 0x72, 0x43, 0x19, 0x09, 0x8c,
-	0x84, 0xb7, 0xd0, 0x15, 0xfe, 0x92, 0x48, 0x8f, 0x44, 0x3e, 0x65, 0x94, 0xad, 0x1c, 0xcb, 0x7c,
-	0x51, 0x42, 0xf1, 0x08, 0xec, 0x54, 0x8f, 0x53, 0x31, 0x4a, 0x5f, 0x6a, 0x01, 0x59, 0xa1, 0x4c,
-	0x70, 0x46, 0x70, 0x7f, 0x59, 0xd0, 0x79, 0x90, 0xc1, 0x3d, 0xa8, 0x2f, 0x79, 0xc8, 0x85, 0xa9,
-	0xdd, 0xf2, 0xd2, 0xe0, 0x91, 0xd6, 0x95, 0x47, 0x5b, 0x7f, 0x84, 0x5d, 0xae, 0xd6, 0x44, 0x4c,
-	0x38, 0x53, 0x84, 0x05, 0xda, 0xad, 0xea, 0x53, 0x1a, 0xca, 0x4c, 0x57, 0x80, 0x9d, 0x89, 0x40,
-	0xa8, 0x69, 0x83, 0x32, 0x0d, 0xe6, 0xac, 0xa7, 0x5a, 0x19, 0xa2, 0x69, 0xdd, 0x4d, 0x2b, 0xa6,
-	0xfc, 0xe1, 0x27, 0x93, 0xf0, 0x32, 0x82, 0x7b, 0x04, 0x76, 0x8a, 0x60, 0x13, 0x6a, 0x17, 0xe3,
-	0xcf, 0xd3, 0xde, 0x0b, 0x04, 0xb0, 0x4f, 0xa7, 0xe6, 0x6c, 0x61, 0x0b, 0xea, 0x5f, 0xe6, 0x67,
-	0x53, 0xaf, 0x57, 0x71, 0xc7, 0x50, 0xd7, 0xde, 0x0a, 0xbd, 0x89, 0xd4, 0x93, 0x59, 0x12, 0x65,
-	0xbe, 0xe6, 0x00, 0xee, 0x43, 0x33, 0xa0, 0x52, 0xf9, 0x6c, 0x49, 0xb2, 0xc9, 0xb7, 0xb1, 0xfb,
-	0xc7, 0x02, 0xc8, 0xd7, 0xfb, 0xa8, 0xf6, 0x67, 0xd7, 0x8c, 0xef, 0xa1, 0x16, 0xf1, 0x80, 0x38,
-	0x35, 0x33, 0xd7, 0xeb, 0x87, 0xd7, 0xa5, 0x70, 0xbc, 0xe0, 0x01, 0xf1, 0x0c, 0x15, 0xfb, 0xd0,
-	0x4e, 0xc5, 0x4d, 0x78, 0xc2, 0x94, 0x53, 0x37, 0x25, 0x8b, 0x50, 0xbe, 0x47, 0xbb, 0x5f, 0xdd,
-	0xee, 0xd1, 0x1d, 0x40, 0xf7, 0x61, 0x3d, 0xdc, 0x81, 0xe6, 0xc9, 0xf9, 0xe5, 0x7c, 0x3c, 0x9b,
-	0x68, 0x97, 0x9a, 0x50, 0x9b, 0x9f, 0x5f, 0x4c, 0x7b, 0x96, 0xfb, 0xd7, 0x82, 0xde, 0x35, 0x95,
-	0x13, 0xce, 0x6e, 0xe8, 0x2a, 0x11, 0xbe, 0xa2, 0x9c, 0x69, 0x1b, 0xd6, 0x5c, 0xaa, 0x59, 0x3e,
-	0xdf, 0x36, 0x46, 0x07, 0x1a, 0xb7, 0x54, 0x9a, 0x54, 0xc5, 0xa4, 0x36, 0x21, 0x1e, 0x00, 0xdc,
-	0x24, 0x61, 0x28, 0x97, 0x82, 0x10, 0x66, 0xc6, 0x6f, 0x7a, 0x05, 0x04, 0x07, 0xb0, 0x2b, 0x88,
-	0xe4, 0x61, 0xa2, 0x7b, 0x7c, 0xa7, 0x81, 0x5a, 0x1b, 0x2b, 0x3a, 0x5e, 0x19, 0xc6, 0x77, 0xd0,
-	0xcb, 0xa1, 0x33, 0x42, 0x57, 0xeb, 0xcd, 0xec, 0xff, 0xe1, 0xba, 0x6b, 0xc4, 0x6f, 0x29, 0x5b,
-	0x5d, 0x31, 0xaa, 0x1c, 0xdb, 0xb0, 0x0a, 0xc8, 0xe8, 0xb7, 0x05, 0x8d, 0xcb, 0xf4, 0xdd, 0xe3,
-	0x31, 0x74, 0x66, 0xe4, 0xae, 0xb0, 0xc4, 0xd2, 0x9b, 0xdd, 0x2f, 0xc5, 0x78, 0x00, 0x8d, 0x19,
-	0xb9, 0x33, 0xaf, 0xb2, 0xa9, 0x53, 0xfa, 0xb4, 0xdf, 0xd2, 0x27, 0xf3, 0xd7, 0xc0, 0x37, 0xd0,
-	0xba, 0x54, 0xbe, 0x50, 0x86, 0x91, 0xe3, 0x25, 0xca, 0x78, 0xc1, 0x9f, 0xa5, 0x1c, 0xc3, 0xce,
-	0xc6, 0x7f, 0x72, 0x4d, 0x25, 0xee, 0xe9, 0x54, 0x79, 0x29, 0x85, 0x0f, 0x46, 0xdf, 0xd2, 0xdb,
-	0x2c, 0xf1, 0x10, 0xe0, 0x2a, 0x0e, 0x7c, 0x45, 0xf2, 0xea, 0xe6, 0x9a, 0x17, 0xc8, 0x03, 0x0b,
-	0x5d, 0x80, 0x53, 0xca, 0xa8, 0x5c, 0x3f, 0xad, 0x61, 0x61, 0x9b, 0x7f, 0xe2, 0x87, 0x7f, 0x01,
-	0x00, 0x00, 0xff, 0xff, 0x87, 0x33, 0xab, 0xd0, 0x24, 0x05, 0x00, 0x00,
+	// 803 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x55, 0x5d, 0x6e, 0xdb, 0x46,
+	0x10, 0x2e, 0x69, 0x89, 0x12, 0x47, 0xa6, 0xa2, 0x2e, 0x82, 0x82, 0x30, 0xda, 0x54, 0x60, 0xdd,
+	0x82, 0x31, 0x10, 0x3b, 0x75, 0x1f, 0xfb, 0x52, 0x43, 0x51, 0x9c, 0x14, 0x95, 0x5a, 0x50, 0x8a,
+	0xfb, 0x5a, 0x8a, 0x5c, 0x4b, 0x0b, 0x90, 0xbb, 0x04, 0x77, 0x19, 0xc1, 0x57, 0xe8, 0x15, 0x7a,
+	0x8e, 0x9e, 0xa4, 0xef, 0x3d, 0x4b, 0xb1, 0x3f, 0x14, 0x29, 0xd6, 0xce, 0xdb, 0xec, 0x37, 0xa3,
+	0x99, 0xef, 0x9b, 0x19, 0x8e, 0xc0, 0xe3, 0x45, 0x49, 0xa8, 0xe0, 0x97, 0x45, 0xc9, 0x04, 0x43,
+	0x76, 0xb1, 0x09, 0x06, 0xd0, 0x9f, 0xe7, 0x85, 0x78, 0x08, 0x42, 0x38, 0xbd, 0xd9, 0xb0, 0x52,
+	0x2c, 0x30, 0xe7, 0xf1, 0x16, 0x23, 0x1f, 0x06, 0xb9, 0x36, 0x7d, 0x6b, 0x6a, 0x85, 0x6e, 0x54,
+	0x3f, 0x83, 0x9f, 0xa1, 0x17, 0xc5, 0x09, 0x46, 0xe7, 0x30, 0x28, 0xb2, 0xf8, 0x01, 0x97, 0xdc,
+	0xb7, 0xa6, 0x27, 0xe1, 0xe8, 0x1a, 0x2e, 0x8b, 0xcd, 0xe5, 0x6f, 0x0a, 0x8a, 0x6a, 0x17, 0xfa,
+	0x12, 0xdc, 0x14, 0x73, 0x71, 0x17, 0x67, 0x15, 0xf6, 0xed, 0xa9, 0x15, 0x7a, 0x51, 0x03, 0x04,
+	0x7f, 0xc0, 0xe8, 0x0d, 0xbe, 0x27, 0x14, 0xa7, 0x2a, 0xe5, 0x77, 0x30, 0x2e, 0xe3, 0x04, 0xf3,
+	0x08, 0xe7, 0x31, 0xa1, 0x84, 0x6e, 0x55, 0x6d, 0x2f, 0xea, 0xa0, 0xe8, 0x25, 0x38, 0x3a, 0xbf,
+	0x6f, 0xab, 0xca, 0x9f, 0xcb, 0xca, 0x26, 0x91, 0x21, 0x60, 0x02, 0x82, 0x57, 0x30, 0x88, 0x30,
+	0xaf, 0x32, 0xc1, 0x51, 0x00, 0x4e, 0xa9, 0xcc, 0x36, 0x5f, 0xed, 0x8c, 0x8c, 0x27, 0xd8, 0x80,
+	0xa3, 0x11, 0x19, 0x6d, 0x6a, 0x48, 0x0e, 0xc7, 0xea, 0x8c, 0x07, 0x7d, 0x71, 0xc8, 0x28, 0x95,
+	0xd9, 0x75, 0x96, 0x63, 0xd1, 0x27, 0x5d, 0xd1, 0x7f, 0x5a, 0xe0, 0x1d, 0x91, 0x45, 0xcf, 0xa1,
+	0x9f, 0xb0, 0x8c, 0x95, 0xa6, 0xd5, 0xfa, 0xf1, 0x48, 0x37, 0xec, 0x47, 0xbb, 0xf1, 0x23, 0x3c,
+	0x63, 0x62, 0x87, 0xcb, 0x19, 0xa3, 0x02, 0xd3, 0x54, 0x0e, 0xe4, 0xe4, 0xa9, 0xb6, 0x74, 0x23,
+	0x83, 0x0c, 0x40, 0x0b, 0x5e, 0x15, 0x38, 0x91, 0xa2, 0xb7, 0xca, 0xa1, 0x98, 0x8c, 0xb5, 0xe8,
+	0x5b, 0x85, 0x44, 0xc6, 0x83, 0x10, 0xf4, 0xb2, 0x98, 0x0b, 0x43, 0x46, 0xd9, 0x92, 0xaa, 0x60,
+	0x55, 0x49, 0xe3, 0x1c, 0x53, 0xb1, 0x8c, 0x73, 0xad, 0xda, 0x8d, 0x3a, 0x68, 0xf0, 0x13, 0x38,
+	0x46, 0x32, 0x82, 0x9e, 0xc4, 0x8d, 0x62, 0x65, 0xb7, 0xaa, 0xdb, 0x4f, 0x55, 0x0f, 0xae, 0x60,
+	0xb0, 0x12, 0x71, 0x29, 0x70, 0x89, 0xce, 0xc1, 0x4b, 0x58, 0x45, 0x45, 0xca, 0xf6, 0x74, 0x4d,
+	0x4c, 0x2e, 0x2f, 0x3a, 0x06, 0x83, 0x1b, 0xe8, 0xcb, 0xdd, 0x2a, 0xe5, 0x50, 0xf4, 0xd8, 0x96,
+	0x55, 0x6e, 0x42, 0x1b, 0x00, 0x9d, 0xc1, 0x30, 0x25, 0x5c, 0xc4, 0x34, 0xa9, 0xd7, 0xf4, 0xf0,
+	0x0e, 0xfe, 0xb1, 0x00, 0xd6, 0x07, 0x21, 0x8f, 0x52, 0xff, 0xe4, 0xc4, 0xd1, 0xf7, 0xd0, 0xcb,
+	0x59, 0x8a, 0xfd, 0x9e, 0x92, 0xf5, 0x95, 0x94, 0xd5, 0xe4, 0x6b, 0x99, 0x0b, 0x96, 0xe2, 0x48,
+	0x85, 0xa2, 0x29, 0x8c, 0x34, 0xb9, 0x99, 0x54, 0xe3, 0xf7, 0x55, 0xca, 0x36, 0xd4, 0x2c, 0x8d,
+	0x33, 0x3d, 0x39, 0x2c, 0x4d, 0x10, 0xc2, 0xf8, 0x38, 0x1f, 0x3a, 0x85, 0xe1, 0x9b, 0xf7, 0xab,
+	0xf5, 0xcd, 0x72, 0x36, 0x9f, 0x7c, 0x86, 0x86, 0xd0, 0x5b, 0xbf, 0x5f, 0xcc, 0x27, 0x56, 0xf0,
+	0xaf, 0x05, 0x93, 0x3b, 0xc2, 0x67, 0x8c, 0xde, 0x93, 0x6d, 0x55, 0xc6, 0x82, 0x30, 0x2a, 0xdb,
+	0xb0, 0x63, 0x5c, 0x8f, 0x50, 0xeb, 0x3b, 0xbc, 0xe5, 0x49, 0xf8, 0x48, 0xb8, 0x72, 0xd9, 0xfa,
+	0x24, 0x98, 0x27, 0x7a, 0x01, 0x70, 0x5f, 0x65, 0x19, 0x4f, 0x4a, 0x8c, 0xa9, 0x92, 0x3f, 0x8c,
+	0x5a, 0x08, 0x0a, 0xe1, 0x59, 0x89, 0x39, 0xcb, 0x2a, 0x59, 0xe3, 0x77, 0x92, 0x8a, 0x9d, 0x6a,
+	0x85, 0x17, 0x75, 0x61, 0x74, 0x01, 0x93, 0x06, 0x7a, 0x87, 0xc9, 0x76, 0x57, 0x6b, 0xff, 0x1f,
+	0x2e, 0xab, 0xe6, 0xec, 0x23, 0xa1, 0xdb, 0x0f, 0x94, 0x08, 0xdf, 0x51, 0x51, 0x2d, 0xe4, 0xe2,
+	0x25, 0x38, 0x7a, 0x79, 0xa4, 0xe8, 0xc5, 0xcd, 0x2f, 0x52, 0x3e, 0x80, 0xf3, 0x76, 0xae, 0x6c,
+	0x0b, 0xb9, 0xd0, 0xff, 0x75, 0xfd, 0x6e, 0x1e, 0x4d, 0xec, 0xeb, 0xbf, 0x6d, 0x18, 0xac, 0xf4,
+	0x71, 0x44, 0x57, 0xe0, 0x2d, 0xf1, 0xbe, 0x35, 0xef, 0xf1, 0xf1, 0xbc, 0xce, 0x3a, 0x6f, 0xf4,
+	0x02, 0x06, 0x4b, 0xbc, 0x57, 0x07, 0x6c, 0xa8, 0x4e, 0x4a, 0x9c, 0xe0, 0x33, 0x57, 0x5a, 0xea,
+	0xb4, 0xa2, 0x6f, 0xc0, 0x55, 0x2b, 0xab, 0x22, 0x46, 0x12, 0x37, 0x1b, 0xdc, 0x0e, 0x0a, 0xc1,
+	0x55, 0xf7, 0x57, 0x05, 0x4d, 0x24, 0xde, 0x3e, 0xc7, 0xed, 0xc8, 0x2b, 0x38, 0xad, 0x67, 0x86,
+	0xef, 0x08, 0x47, 0xcf, 0xa5, 0xab, 0x3b, 0xc8, 0xf6, 0x0f, 0x2e, 0x00, 0x6e, 0xb1, 0xa8, 0xaf,
+	0xe0, 0xb8, 0xb9, 0x7a, 0xf2, 0x93, 0x3f, 0x6b, 0x5d, 0xc1, 0xd7, 0x16, 0x7a, 0x05, 0xe3, 0x5b,
+	0x2c, 0x1a, 0x71, 0x1c, 0x35, 0x89, 0xba, 0xc2, 0x5f, 0x5b, 0xd7, 0x7f, 0x59, 0xfa, 0xeb, 0xe2,
+	0xe8, 0x1c, 0xe0, 0x43, 0x91, 0xc6, 0x02, 0x2b, 0x01, 0x6e, 0xdd, 0x87, 0xb6, 0xc6, 0xd0, 0x92,
+	0x51, 0x6f, 0x09, 0x25, 0x7c, 0xd7, 0xf4, 0xc2, 0xf0, 0x6a, 0x13, 0xfe, 0x16, 0x46, 0xab, 0x1d,
+	0xdb, 0xd7, 0x8c, 0x9f, 0x0a, 0xfb, 0x5a, 0x9e, 0x02, 0x56, 0xc8, 0x1e, 0xb4, 0x48, 0x36, 0xe6,
+	0xc6, 0x51, 0xff, 0x73, 0x3f, 0xfc, 0x17, 0x00, 0x00, 0xff, 0xff, 0x11, 0xa5, 0x12, 0xb7, 0xf8,
+	0x06, 0x00, 0x00,
 }

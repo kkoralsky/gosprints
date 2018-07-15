@@ -2,27 +2,34 @@ syntax = "proto3";
 
 package pb;
 
-// server & client interface
+// server & visual interface
 service Sprints {
     rpc NewTournament(Tournament) returns (Tournament);
     rpc NewRace(Race) returns (Empty);
-    rpc StartRace(Empty) returns (Empty);
-    rpc AbortRace(Empty) returns (Empty);
+    rpc StartRace(Starter) returns (Empty);
+    rpc AbortRace(AbortMessage) returns (Empty);
     rpc ConfigureVis(VisConfiguration) returns (Empty);
+    rpc GetResults(ResultSpec) returns (stream Result);
+    rpc GetTournaments(Empty) returns (stream Tournament);
 }
 
-// client only interface 
+// visual only interface 
 service Races {
     rpc UpdateRace(stream Racer) returns (Empty);
-    rpc FinishRace(Empty) returns (Empty);
+    rpc FinishRace(Results) returns (Empty);
+    rpc ShowResults(Results) returns (Empty);
+    rpc StopVis(Empty) returns (Empty);
 }
 
 message Empty {}
 
+message AbortMessage {
+    string message = 1;
+}
+
 message Race {
     repeated Player players = 1; 
-    Tournament tournament = 2;
-    uint32 destValue = 3;
+    uint32 destValue = 2;
 }
 
 message DefinedRace {
@@ -31,22 +38,42 @@ message DefinedRace {
     repeated DefinedPlayer player = 2;
 }
 
+message Results {
+    repeated Result result = 1;
+}
+
+message Result {
+    Player player = 1;
+    float result = 2;
+    uint32 destValue = 3;
+}
+
 message DefinedPlayer {
     string color = 1;
     uint32 racesRemaining = 2;
     repeated DefinedPlayer otherContenders = 3;
 }
 
+enum Gender {
+    MALE = 0;
+    FEMALE = 1;
+    OTHER = 2;
+}
+
+message ResultSpec {
+    Gender gender = 1; 
+    uint32 last = 2;
+    string tournamentName = 3;
+}
 
 message Player {
     string name = 1;
     Gender gender = 2;
 
-    enum Gender {
-        MALE = 0;
-        FEMALE = 1;
-        OTHER = 2;
-    }
+}
+
+message Starter {
+    uint32 countdownTime = 1;
 }
 
 message Racer {
