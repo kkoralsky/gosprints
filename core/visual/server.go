@@ -3,6 +3,7 @@ package visual
 import (
 	pb "github.com/kkoralsky/gosprints/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"net"
 )
 
@@ -22,7 +23,7 @@ func (v *VisServer) Stop() {
 	v.tcpListener.Close()
 }
 
-func SetupVisServer(port uint, vis VisInterface) (*VisServer, error) {
+func SetupVisServer(port uint, debug bool, vis VisInterface) (*VisServer, error) {
 	var (
 		v = &VisServer{
 			port:       port,
@@ -33,6 +34,13 @@ func SetupVisServer(port uint, vis VisInterface) (*VisServer, error) {
 	)
 	pb.RegisterRacesServer(v.grpcServer, v.vis)
 	pb.RegisterSprintsServer(v.grpcServer, v.vis)
+
+	if debug {
+		reflection.Register(v.grpcServer)
+	} else {
+		_ = reflection.Register // to prevent "unused import" compiler complaint
+	}
+
 	if v.tcpListener, err = net.ListenTCP("tcp", &net.TCPAddr{Port: int(port)}); err != nil {
 		return v, err
 	}
