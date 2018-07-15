@@ -38,13 +38,15 @@ func (b *BaseVis) GetVisCfg() *pb.VisConfiguration {
 func selectVis(visName string) (VisInterface, error) {
 	switch visName {
 	case "bar":
-		return &barVis{}, nil
+		return NewBarVis(), nil
+	case "clock":
+		return NewClockVis(), nil
 	case "game":
-		return &gameVis{}, nil
+		return NewGameVis(), nil
 	default:
 		err := fmt.Errorf("'%s' visualization not found; falling back to 'bar'", visName)
 		core.ErrorLogger.Println(err.Error())
-		return &barVis{}, err
+		return &barVis{}, nil
 	}
 }
 
