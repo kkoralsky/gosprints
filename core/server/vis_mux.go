@@ -10,49 +10,54 @@ import (
 	"time"
 )
 
-type VisClient struct {
+type VisClient interface {
+	pb.SprintsClient
+	pb.RacesClient
+}
+
+type VisMux struct {
 	addresses   []string
 	connections []*grpc.ClientConn
-	clients     []pb.SprintsClient
+	clients     []VisClient
 	pb.SprintsClient
 }
 
-func (v *VisClient) NewTournament(tournament *pb.Tournament) error {
+func (v *Vislient) NewTournament(tournament *pb.Tournament) error {
 	for _, cl := range v.clients {
 		go cl.NewTournament(context.Background(), tournament)
 	}
 	return nil
 }
 
-func (v *VisClient) NewRace(race *pb.Race) error {
+func (v *VisMux) NewRace(race *pb.Race) error {
 	for _, cl := range v.clients {
 		go cl.NewRace(context.Background(), race)
 	}
 	return nil
 }
 
-func (v *VisClient) StartRace(starter *pb.Starter) error {
+func (v *VisMux) StartRace(starter *pb.Starter) error {
 	for _, cl := range v.clients {
 		go cl.StartRace(context.Background(), starter)
 	}
 	return nil
 }
 
-func (v *VisClient) AbortRace(abortMessage *pb.AbortMessage) error {
+func (v *VisMux) AbortRace(abortMessage *pb.AbortMessage) error {
 	for _, cl := range v.clients {
 		go cl.AbortRace(context.Background(), abortMessage)
 	}
 	return nil
 }
 
-func (v *VisClient) ConfigureVis(visCfg *pb.VisConfiguration) error {
+func (v *VisMux) ConfigureVis(visCfg *pb.VisConfiguration) error {
 	for _, cl := range v.clients {
 		go cl.ConfigureVis(context.Background(), visCfg)
 	}
 	return nil
 }
 
-func (v *VisClient) connectionStateUpdater() {
+func (v *VisMux) connectionStateUpdater() {
 	for i, conn := range v.connections {
 		go func() {
 			for conn != nil {
@@ -68,8 +73,8 @@ func (v *VisClient) connectionStateUpdater() {
 	}
 }
 
-func SetupVisClient(outputs string) (*VisClient, error) {
-	var v = VisClient{
+func SetupVisMux(outputs string) (*VisMux, error) {
+	var v = VisMux{
 		addresses: strings.Split(outputs, ","),
 	}
 	for _, addr := range v.addresses {

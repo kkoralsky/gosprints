@@ -12,12 +12,12 @@ func SprintsServer(cfg core.ServerConfig) {
 		panic(err)
 	}
 
-	visClient, err := SetupVisClient(cfg.OutputVisuals)
+	visMux, err := SetupVisMux(cfg.OutputVisuals)
 	if err != nil {
 		panic(err)
 	}
 
-	cmdServer, err := SetupCmdServer(cfg.Port, cfg.GrpcDebug, SetupSprints(devicePoller, visClient))
+	cmdServer, err := SetupCmdServer(cfg.Port, cfg.GrpcDebug, SetupSprints(devicePoller, visMux))
 	if err != nil {
 		panic(err)
 	}
