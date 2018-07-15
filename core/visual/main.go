@@ -9,7 +9,7 @@ func VisualServer(cfg core.VisualConfig) {
 		cfg.ResolutionHeight, cfg.MovingUnit)
 
 	for vis != nil {
-		visServer, err := SetupVisServer(cfg.Port, vis)
+		visServer, err := SetupVisServer(cfg.Port, cfg.GrpcDebug, vis)
 		if err != nil {
 			panic(err)
 		}

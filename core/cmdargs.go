@@ -36,6 +36,7 @@ type VisualConfig struct {
 	Fullscreen       bool
 	ResolutionWidth  uint
 	ResolutionHeight uint
+	GrpcDebug        bool
 }
 
 var (
@@ -58,6 +59,7 @@ var (
 		Fullscreen:       false,
 		ResolutionWidth:  640,
 		ResolutionHeight: 480,
+		GrpcDebug:        false,
 	}
 )
 
@@ -137,6 +139,8 @@ func (c *VisualConfig) Setup() *flag.FlagSet {
 		"visualisation window/screen width in pixels")
 	cfg.UintVar(&c.ResolutionHeight, "height", defaultVisConfig.ResolutionHeight,
 		"visualization window/screen height in pixels")
+	cfg.BoolVar(&c.GrpcDebug, "grpc_debug", defaultVisConfig.GrpcDebug,
+		"run GRPC server in debug mode")
 
 	return cfg
 }
@@ -150,7 +154,7 @@ func FlagsetParse(flagset *flag.FlagSet, args []string, argsValidation func() []
 	if argsValidation != nil {
 		validationErrs = argsValidation()
 	}
-	if len(validationErrs) != 0 || len(args) == 0 {
+	if len(validationErrs) != 0 {
 		flagset.Usage()
 		os.Exit(1)
 	}
