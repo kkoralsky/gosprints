@@ -1,0 +1,13 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+<file>assets/mobile.qml</file>
+<file>assets/NewTournament.qml</file>
+<file>assets/Tournament.qml</file>
+<file>assets/FontAwesome/fontawesome-webfont.ttf</file>
+<file>assets/FontAwesome/FontAwesome.qml</file>
+<file>assets/FontAwesome/FontAwesome.qmlc</file>
+<file>assets/FontAwesome/Object.qml</file>
+<file>assets/FontAwesome/Object.qmlc</file>
+<file>assets/FontAwesome/qmldir</file>
+</qresource>
+</RCC>
