@@ -8,7 +8,7 @@ import (
 )
 
 type mockRaces_UpdateRaceServer struct {
-	pb.Races_UpdateRaceServer
+	pb.Visual_UpdateRaceServer
 	racers       []*pb.Racer
 	maxWait      int
 	minWait      int

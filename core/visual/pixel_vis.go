@@ -67,7 +67,7 @@ func (b *pixelBaseVis) Run() {
 	})
 }
 
-func (b *pixelBaseVis) NewTournament(_ context.Context, tournament *pb.Tournament) (*pb.Tournament, error) {
+func (b *pixelBaseVis) NewTournament(_ context.Context, tournament *pb.Tournament) (*pb.Empty, error) {
 	var (
 		color_rgba color.RGBA
 		ok         bool
@@ -97,7 +97,7 @@ func (b *pixelBaseVis) NewTournament(_ context.Context, tournament *pb.Tournamen
 		}
 		b.colors = append(b.colors, color_rgba)
 	}
-	return tournament, nil
+	return &pb.Empty{}, nil
 }
 
 func (b *pixelBaseVis) NewRace(_ context.Context, race *pb.Race) (*pb.Empty, error) {
@@ -146,7 +146,7 @@ func (b *pixelBaseVis) AbortRace(_ context.Context, abortMessage *pb.AbortMessag
 	return &pb.Empty{}, nil
 }
 
-func (b *pixelBaseVis) StartRace(_ context.Context, starter *pb.Starter) (*pb.Player, error) {
+func (b *pixelBaseVis) StartRace(_ context.Context, starter *pb.Starter) (*pb.Empty, error) {
 	var (
 		frameSleep = time.Duration(1000*starter.CountdownTime/3) * time.Millisecond
 		winCenter  = b.win.Bounds().Center()
@@ -169,7 +169,7 @@ func (b *pixelBaseVis) StartRace(_ context.Context, starter *pb.Starter) (*pb.Pl
 	b.scaleGo(fontScale)
 
 	b.win.Update()
-	return &pb.Player{}, nil
+	return &pb.Empty{}, nil
 }
 
 func (b *pixelBaseVis) FinishRace(_ context.Context, results *pb.Results) (*pb.Empty, error) {
@@ -223,7 +223,7 @@ func (b *pixelBaseVis) ConfigureVis(_ context.Context, visCfg *pb.VisConfigurati
 	return &pb.Empty{}, nil
 }
 
-func (b *pixelBaseVis) UpdateRace(stream pb.Races_UpdateRaceServer) error {
+func (b *pixelBaseVis) UpdateRace(stream pb.Visual_UpdateRaceServer) error {
 	var (
 		racer *pb.Racer
 		err   error
@@ -245,14 +245,6 @@ func (b *pixelBaseVis) UpdateRace(stream pb.Races_UpdateRaceServer) error {
 		b.win.Update()
 	}
 	return nil
-}
-
-func (b *pixelBaseVis) GetResults(resultsSpec *pb.ResultSpec, stream pb.Sprints_GetResultsServer) error {
-	panic("not implemented")
-}
-
-func (b *barVis) GetTournaments(*pb.Empty, pb.Sprints_GetTournamentsServer) error {
-	panic("not implemented")
 }
 
 func (p *pixelBaseVis) StopVis(context.Context, *pb.Empty) (*pb.Empty, error) {

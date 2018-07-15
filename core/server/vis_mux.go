@@ -10,15 +10,11 @@ import (
 	"time"
 )
 
-type VisClient interface {
-	pb.SprintsClient
-	pb.RacesClient
-}
-
 type VisMux struct {
 	addresses   []string
 	connections []*grpc.ClientConn
-	clients     []VisClient
+	clients     []pb.VisualClient
+	racers      []pb.Visual_UpdateRaceClient
 	pb.SprintsClient
 }
 
@@ -32,7 +28,7 @@ func SetupVisMux(outputs string) (*VisMux, error) {
 			core.ErrorLogger.Printf("error while dialing to %s: %s\n", addr, err.Error())
 		} else {
 			v.connections = append(v.connections, conn)
-			v.clients = append(v.clients, pb.NewSprintsClient(conn))
+			v.clients = append(v.clients, pb.NewVisualClient(conn))
 			core.InfoLogger.Printf("dialed to vis: %s with state: %s\n", addr, conn.GetState().String())
 		}
 	}
@@ -43,7 +39,7 @@ func SetupVisMux(outputs string) (*VisMux, error) {
 	return &v, fmt.Errorf("couldnt connect to none of the outputs: %s", outputs)
 }
 
-func (v *Vislient) NewTournament(tournament *pb.Tournament) error {
+func (v *VisMux) NewTournament(tournament *pb.Tournament) error {
 	for _, cl := range v.clients {
 		go cl.NewTournament(context.Background(), tournament)
 	}
@@ -92,4 +88,40 @@ func (v *VisMux) connectionStateUpdater() {
 			core.InfoLogger.Printf("vis connectino: %s closed", v.addresses[i])
 		}()
 	}
+}
+
+func (v *VisMux) SetupRacers() {
+	for i, cl := range v.clients {
+		if racer, err := cl.UpdateRace(context.Background()); err != nil {
+			core.ErrorLogger.Printf("couldnt setup racer for: %s: %v", v.addresses[i], err)
+		} else {
+			v.racers = append(v.racers, racer)
+		}
+	}
+}
+
+func (v *VisMux) SendRaceUpdate(playerNum uint32, distance uint32) {
+	for _, racer := range v.racers {
+		go racer.Send(&pb.Racer{PlayerNum: playerNum, Distance: distance})
+	}
+}
+
+func (v *VisMux) CloseRacers() error {
+	var (
+		len_before = len(v.racers)
+		closed     = 0
+	)
+	for i, racer := range v.racers {
+		_, err := racer.CloseAndRecv()
+		if err != nil {
+			core.ErrorLogger.Printf("error while closing racer %d: %v", i, err)
+		} else {
+			closed++
+		}
+	}
+	v.racers = nil
+	if closed < len_before {
+		return fmt.Errorf("%d racers not closed", len_before-closed)
+	}
+	return nil
 }

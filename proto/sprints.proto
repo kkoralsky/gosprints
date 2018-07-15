@@ -2,22 +2,25 @@ syntax = "proto3";
 
 package pb;
 
-// server & visual interface
 service Sprints {
     rpc NewTournament(Tournament) returns (Tournament);
     rpc NewRace(Race) returns (Empty);
-    rpc StartRace(Starter) returns (Empty);
+    rpc StartRace(Starter) returns (Player);
     rpc AbortRace(AbortMessage) returns (Empty);
     rpc ConfigureVis(VisConfiguration) returns (Empty);
     rpc GetResults(ResultSpec) returns (stream Result);
     rpc GetTournaments(Empty) returns (stream Tournament);
 }
 
-// visual only interface 
-service Races {
+service Visual {
+    rpc NewTournament(Tournament) returns (Empty);
+    rpc NewRace(Race) returns (Empty);
+    rpc StartRace(Starter) returns (Empty);
+    rpc AbortRace(AbortMessage) returns (Empty);
     rpc UpdateRace(stream Racer) returns (Empty);
     rpc FinishRace(Results) returns (Empty);
     rpc ShowResults(Results) returns (Empty);
+    rpc ConfigureVis(VisConfiguration) returns (Empty);
     rpc StopVis(Empty) returns (Empty);
 }
 
@@ -69,7 +72,6 @@ message ResultSpec {
 message Player {
     string name = 1;
     Gender gender = 2;
-
 }
 
 message Starter {

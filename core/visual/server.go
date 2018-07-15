@@ -32,8 +32,7 @@ func SetupVisServer(port uint, debug bool, vis VisInterface) (*VisServer, error)
 		}
 		err error
 	)
-	pb.RegisterRacesServer(v.grpcServer, v.vis)
-	pb.RegisterSprintsServer(v.grpcServer, v.vis)
+	pb.RegisterVisualServer(v.grpcServer, v.vis)
 
 	if debug {
 		reflection.Register(v.grpcServer)

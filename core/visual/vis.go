@@ -8,8 +8,7 @@ import (
 )
 
 type VisInterface interface {
-	pb.SprintsServer
-	pb.RacesServer
+	pb.VisualServer
 	Run()
 	ResetConfiguration() bool
 	IsConfigured() bool
