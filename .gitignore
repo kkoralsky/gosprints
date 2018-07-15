@@ -1,1 +1,14 @@
+# binaries
 /gosprints
+/dlv
+/core/visual/visual.test
+/mobile/mobile
+
+# go-qt compilation side-effects
+/mobile/deploy
+/mobile/**/*.qmlc
+/mobile/**/*.h
+/mobile/moc*.go
+/mobile/rcc*.go
+*.cpp
+
