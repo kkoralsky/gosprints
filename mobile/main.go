@@ -1,43 +1,50 @@
-// Copyright © 2018 NAME HERE <EMAIL ADDRESS>
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package main
 
 import (
+	"flag"
 	"os"
 
 	"github.com/therecipe/qt/core"
 	"github.com/therecipe/qt/gui"
-	"github.com/therecipe/qt/quick"
+	"github.com/therecipe/qt/qml"
 )
 
-var addr = "localhost:9999"
+var (
+	defaultHost      = "localhost"
+	defaultPort uint = 9998
+)
 
 func main() {
+	var (
+		qmlPath = "assets/mobile.qml"
+	)
+	qmlDebug := flag.Bool("qmldebug", false, "load qml from filesystem rather than from QRC")
+	flag.Parse()
+
+	if !*qmlDebug {
+		qmlPath = "qrc:/" + qmlPath
+	}
+
+	core.QCoreApplication_SetApplicationName("Gosprints Ctrl")
 	core.QCoreApplication_SetAttribute(core.Qt__AA_EnableHighDpiScaling, true)
 
 	gui.NewQGuiApplication(len(os.Args), os.Args)
 
-	var view = quick.NewQQuickView(nil)
-	view.SetResizeMode(quick.QQuickView__SizeRootObjectToView)
+	var (
+		connectionHost = core.NewQVariant14(defaultHost)
+		connectionPort = core.NewQVariant8(defaultPort)
 
-	sprintsClient := SetupSprintsClient(addr)
+		resultModel   = NewResultModel(nil)
+		engine        = qml.NewQQmlApplicationEngine(nil)
+		root          = engine.RootContext()
+		sprintsClient = SetupSprintsClient(resultModel)
+	)
 
-	view.RootContext().SetContextProperty("SprintsClient", sprintsClient)
-	view.SetSource(core.NewQUrl3("qrc:/qml/main.qml", 0))
+	root.SetContextProperty("SprintsClient", sprintsClient)
+	root.SetContextProperty2("connectionHost", connectionHost)
+	root.SetContextProperty2("connectionPort", connectionPort)
 
-	view.Show()
+	engine.Load(core.NewQUrl3(qmlPath, 0))
 
 	gui.QGuiApplication_Exec()
 
