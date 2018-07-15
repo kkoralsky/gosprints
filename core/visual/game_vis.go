@@ -11,3 +11,7 @@ type gameVis struct {
 	win    *pixelgl.Window
 	winCfg *pixelgl.WindowConfig
 }
+
+func NewGameVis() *gameVis {
+	return &gameVis{}
+}
