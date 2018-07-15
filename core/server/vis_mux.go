@@ -22,6 +22,27 @@ type VisMux struct {
 	pb.SprintsClient
 }
 
+func SetupVisMux(outputs string) (*VisMux, error) {
+	var v = VisMux{
+		addresses: strings.Split(outputs, ","),
+	}
+	for _, addr := range v.addresses {
+		conn, err := grpc.Dial(addr, grpc.WithInsecure(), grpc.WithTimeout(10*time.Second))
+		if err != nil {
+			core.ErrorLogger.Printf("error while dialing to %s: %s\n", addr, err.Error())
+		} else {
+			v.connections = append(v.connections, conn)
+			v.clients = append(v.clients, pb.NewSprintsClient(conn))
+			core.InfoLogger.Printf("dialed to vis: %s with state: %s\n", addr, conn.GetState().String())
+		}
+	}
+	if len(v.connections) > 0 {
+		go v.connectionStateUpdater()
+		return &v, nil
+	}
+	return &v, fmt.Errorf("couldnt connect to none of the outputs: %s", outputs)
+}
+
 func (v *Vislient) NewTournament(tournament *pb.Tournament) error {
 	for _, cl := range v.clients {
 		go cl.NewTournament(context.Background(), tournament)
@@ -71,25 +92,4 @@ func (v *VisMux) connectionStateUpdater() {
 			core.InfoLogger.Printf("vis connectino: %s closed", v.addresses[i])
 		}()
 	}
-}
-
-func SetupVisMux(outputs string) (*VisMux, error) {
-	var v = VisMux{
-		addresses: strings.Split(outputs, ","),
-	}
-	for _, addr := range v.addresses {
-		conn, err := grpc.Dial(addr, grpc.WithInsecure(), grpc.WithTimeout(10*time.Second))
-		if err != nil {
-			core.ErrorLogger.Printf("error while dialing to %s: %s\n", addr, err.Error())
-		} else {
-			v.connections = append(v.connections, conn)
-			v.clients = append(v.clients, pb.NewSprintsClient(conn))
-			core.InfoLogger.Printf("dialed to vis: %s with state: %s\n", addr, conn.GetState().String())
-		}
-	}
-	if len(v.connections) > 0 {
-		go v.connectionStateUpdater()
-		return &v, nil
-	}
-	return &v, fmt.Errorf("couldnt connect to none of the outputs: %s", outputs)
 }
