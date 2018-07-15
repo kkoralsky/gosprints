@@ -22,10 +22,10 @@ func SprintsServer(cfg core.ServerConfig) {
 		panic(err)
 	}
 
-	if err := (*devicePoller).Start(); err != nil {
+	if err := devicePoller.Start(); err != nil {
 		panic(err)
 	}
 
 	cmdServer.Run()
-	(*devicePoller).Close()
+	devicePoller.Close()
 }

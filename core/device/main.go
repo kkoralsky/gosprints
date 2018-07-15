@@ -18,10 +18,7 @@ type InputDevice interface {
 
 // SetupDevice parses device configuration string and returns proper InputDevice interface
 // implementation already initiaited
-func SetupDevice(deviceConf string, samplingRate uint, failstartThreshold uint) (*InputDevice, error) {
-	var (
-		device InputDevice
-	)
+func SetupDevice(deviceConf string, samplingRate uint, failstartThreshold uint) (device InputDevice, err error) {
 	deviceConfTuple := strings.Split(deviceConf, ":")
 	switch deviceConfTuple[0] {
 	case string("SHM"):
@@ -30,10 +27,10 @@ func SetupDevice(deviceConf string, samplingRate uint, failstartThreshold uint) 
 		device = &ShmReader{}
 	}
 
-	err := device.Init(strings.Split(deviceConfTuple[1], ","), samplingRate, failstartThreshold)
+	err = device.Init(strings.Split(deviceConfTuple[1], ","), samplingRate, failstartThreshold)
 	if err != nil {
 		return nil, errors.Wrap(err, "device initialization")
 	}
 
-	return &device, nil
+	return device, nil
 }
