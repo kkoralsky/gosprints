@@ -146,7 +146,7 @@ func (b *pixelBaseVis) AbortRace(_ context.Context, abortMessage *pb.AbortMessag
 	return &pb.Empty{}, nil
 }
 
-func (b *pixelBaseVis) StartRace(_ context.Context, starter *pb.Starter) (*pb.Empty, error) {
+func (b *pixelBaseVis) StartRace(_ context.Context, starter *pb.Starter) (*pb.Player, error) {
 	var (
 		frameSleep = time.Duration(1000*starter.CountdownTime/3) * time.Millisecond
 		winCenter  = b.win.Bounds().Center()
@@ -169,7 +169,7 @@ func (b *pixelBaseVis) StartRace(_ context.Context, starter *pb.Starter) (*pb.Em
 	b.scaleGo(fontScale)
 
 	b.win.Update()
-	return &pb.Empty{}, nil
+	return &pb.Player{}, nil
 }
 
 func (b *pixelBaseVis) FinishRace(_ context.Context, results *pb.Results) (*pb.Empty, error) {
