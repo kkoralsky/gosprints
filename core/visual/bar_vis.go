@@ -5,7 +5,6 @@ import (
 	// "github.com/faiface/pixel/imdraw"
 	// "github.com/faiface/pixel/pixelgl"
 	"github.com/kkoralsky/gosprints/core"
-	pb "github.com/kkoralsky/gosprints/proto"
 )
 
 type barVis struct {
