@@ -26,7 +26,7 @@ func SetupSprints(device device.InputDevice, visMux *VisMux) *Sprints {
 
 func (s *Sprints) NewTournament(ctx context.Context, tournament *pb.Tournament) (*pb.Tournament, error) {
 	s.tournament = tournament
-	return tournament, nil
+	return tournament, s.visMux.NewTournament(tournament)
 }
 
 func (s *Sprints) NewRace(ctx context.Context, race *pb.Race) (*pb.Empty, error) {
