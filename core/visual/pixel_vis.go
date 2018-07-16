@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/gobuffalo/packr"
+	"golang.org/x/image/colornames"
 	"golang.org/x/image/font/basicfont"
 	"image"
 	"image/color"
@@ -19,7 +20,6 @@ import (
 	"github.com/faiface/pixel/text"
 	log "github.com/kkoralsky/gosprints/core"
 	pb "github.com/kkoralsky/gosprints/proto"
-	"golang.org/x/image/colornames"
 )
 
 var (
@@ -50,6 +50,15 @@ type pixelBaseVis struct {
 
 func (b *pixelBaseVis) Run() {
 	b.fontAtlas = text.NewAtlas(fontFace, text.ASCII, text.RangeTable(unicode.Latin))
+
+	b.NewTournament(context.Background(), &pb.Tournament{
+		Color:       []string{"blue", "red", "green", "yellow"},
+		DestValue:   400,
+		Name:        "default tournament",
+		Mode:        pb.Tournament_DISTANCE,
+		PlayerCount: 2,
+	})
+
 	pixelgl.Run(func() {
 		var err error
 		if b.visCfg.Fullscreen {
@@ -90,11 +99,13 @@ func (b *pixelBaseVis) NewTournament(_ context.Context, tournament *pb.Tournamen
 		return nil, fmt.Errorf("Not enough color defined for players")
 	}
 
+	b.colors = nil
 	for i = 0; i < b.playerCount; i++ {
 		color_rgba, ok = colornames.Map[tournament.Color[i]]
 		if !ok {
 			return nil, fmt.Errorf("Color %s is unknown", tournament.Color[i])
 		}
+
 		b.colors = append(b.colors, color_rgba)
 	}
 	return &pb.Empty{}, nil
@@ -213,7 +224,7 @@ func (b *pixelBaseVis) ConfigureVis(_ context.Context, visCfg *pb.VisConfigurati
 	b.visCfg = visCfg
 	if b.ResetConfiguration() {
 		b.winCfg = &pixelgl.WindowConfig{
-			Title:     visCfg.HostName,
+			Title:     fmt.Sprintf("gosprints %s %s", b.visCfg.VisName, visCfg.HostName),
 			Bounds:    pixel.R(0, 0, float64(visCfg.ResolutionWidth), float64(visCfg.ResolutionHeight)),
 			Resizable: false,
 			VSync:     true,
