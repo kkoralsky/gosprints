@@ -3,6 +3,7 @@
 /dlv
 /core/visual/visual.test
 /mobile/mobile
+/raspio/goldio
 
 # go-qt compilation side-effects
 /mobile/deploy
