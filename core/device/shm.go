@@ -16,16 +16,13 @@ const (
 	shmCloseSignal              = syscall.SIGTERM
 	shmPrefix                   = "/gosprints"
 	shmDevice                   = "/dev/shm"
-	defaultShmThreshold         = 5
-	defaultShmSleep             = 0
-	defaultShmSimulate          = false
 	defaultShmCounterExecutable = "raspio/goldio"
-	defaultShmPullUp            = true
 	shmExecutableEnv            = "GOSPRINTS_SHM_EXEC"
 	shmSleepEnv                 = "GOSPRINTS_SHM_SLEEP"
 	shmSimulateEnv              = "GOSPRINTS_SHM_SIMULATE"
 	shmPullUpEnv                = "GOSPRINTS_SHM_PULLUP"
-	shmSudo                     = "GOSPRINTS_SHM_SUDO"
+	shmSudoEnv                  = "GOSPRINTS_SHM_SUDO"
+	shmWaitAfterResetEnv        = "GOSPRINTS_GOLDIO_WAIT"
 )
 
 // ShmReader represents SHM connection to read players distance; implements InputDevice
@@ -41,28 +38,38 @@ type ShmReader struct {
 // Init creates SHM "sockets" where input device data will be written
 func (s *ShmReader) Init(players []string, samplingRate uint, falseStart uint) error {
 	var (
-		shmPrefix         string
-		counterExecPath   string
-		counterPullupFlag string
-		found             bool
+		counterExecPath        string
+		counterArgs            []string
+		found                  bool
+		counterSleep           string
+		counterSleepAfterReset string
 	)
 	counterExecPath, found = os.LookupEnv(shmExecutableEnv)
 	if !found {
 		counterExecPath = defaultShmCounterExecutable
 	}
 
-	if _, found = os.LookupEnv(shmPullupGpiosEnv); found {
-		counterPullupFlag = "-p"
+	if _, found = os.LookupEnv(shmPullUpEnv); found {
+		counterArgs = append(counterArgs, "-p")
+	}
+	if _, found = os.LookupEnv(shmSimulateEnv); found {
+		counterArgs = append(counterArgs, "-s")
+	}
+	if counterSleep, found = os.LookupEnv(shmSleepEnv); found {
+		counterArgs = append(counterArgs, fmt.Sprintf("-w %s", counterSleep))
 	}
 
-	s.counterCmd = exec.Command(counterExecPath, counterPullupFlag,
-		fmt.Sprintf("%d", samplingRate), strings.Join(players, ","))
-	s.counterCmd.Env = os.Environ()
+	counterArgs = append(counterArgs, fmt.Sprintf("-t %d", samplingRate), strings.Join(players, ","))
 
-	shmPrefix, found = os.LookupEnv(shmPrefixEnv)
-	if !found {
-		shmPrefix = defaultShmPrefix
-		s.counterCmd.Env = append(s.counterCmd.Env, shmPrefixEnv+"="+shmPrefix)
+	if _, found = os.LookupEnv(shmSudoEnv); found {
+		s.counterCmd = exec.Command("sudo", counterExecPath, strings.Join(counterArgs, " "))
+	} else {
+		s.counterCmd = exec.Command(counterExecPath, strings.Join(counterArgs, " "))
+	}
+
+	s.counterCmd.Env = os.Environ()
+	if counterSleepAfterReset, found = os.LookupEnv(shmWaitAfterResetEnv); found {
+		s.counterCmd.Env = append(s.counterCmd.Env, shmWaitAfterResetEnv+"="+counterSleepAfterReset)
 	}
 
 	s.threshold = samplingRate
