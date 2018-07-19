@@ -1,0 +1,14 @@
+MAKE=make
+CC=gcc
+CFLAGS=-Wall -O2
+
+WIRINGPI_PATH=./wiringPi/wiringPi
+WIRINGPI_SONAME=wiringPi
+WIRINGPI_LIB=$(WIRINGPI_PATH)/lib$(WIRINGPI_SONAME).so
+
+goldio: goldio.c $(WIRINGPI_LIB)
+	$(CC) $(CFLAGS) -L$(WIRINGPI_PATH) -I$(WIRINGPI_PATH) -lrt -l$(WIRINGPI_SONAME) -o $@ $<
+
+$(WIRINGPI_LIB): $(WIRINGPI_PATH)/*.c
+	$(MAKE) -C $(WIRINGPI_PATH)
+	cd $(WIRINGPI_PATH) && ln -s lib$(WIRINGPI_SONAME).so.* lib$(WIRINGPI_SONAME).so
