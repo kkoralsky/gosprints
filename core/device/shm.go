@@ -12,12 +12,20 @@ import (
 )
 
 const (
-	defaultShmPrefix            = "/gosprints"
-	defaultShmThreshold         = 5
-	defaultShmCounterExecutable = "goldio"
+	shmResetSignal              = syscall.SIGABRT
+	shmCloseSignal              = syscall.SIGTERM
+	shmPrefix                   = "/gosprints"
 	shmDevice                   = "/dev/shm"
-	shmPrefixEnv                = "GOSRPINTS_SHM_PREFX"
+	defaultShmThreshold         = 5
+	defaultShmSleep             = 0
+	defaultShmSimulate          = false
+	defaultShmCounterExecutable = "raspio/goldio"
+	defaultShmPullUp            = true
 	shmExecutableEnv            = "GOSPRINTS_SHM_EXEC"
+	shmSleepEnv                 = "GOSPRINTS_SHM_SLEEP"
+	shmSimulateEnv              = "GOSPRINTS_SHM_SIMULATE"
+	shmPullUpEnv                = "GOSPRINTS_SHM_PULLUP"
+	shmSudo                     = "GOSPRINTS_SHM_SUDO"
 )
 
 // ShmReader represents SHM connection to read players distance; implements InputDevice
@@ -33,16 +41,22 @@ type ShmReader struct {
 // Init creates SHM "sockets" where input device data will be written
 func (s *ShmReader) Init(players []string, samplingRate uint, falseStart uint) error {
 	var (
-		shmPrefix       string
-		counterExecPath string
-		found           bool
+		shmPrefix         string
+		counterExecPath   string
+		counterPullupFlag string
+		found             bool
 	)
 	counterExecPath, found = os.LookupEnv(shmExecutableEnv)
 	if !found {
 		counterExecPath = defaultShmCounterExecutable
 	}
 
-	s.counterCmd = exec.Command(counterExecPath, strings.Join(players, ","))
+	if _, found = os.LookupEnv(shmPullupGpiosEnv); found {
+		counterPullupFlag = "-p"
+	}
+
+	s.counterCmd = exec.Command(counterExecPath, counterPullupFlag,
+		fmt.Sprintf("%d", samplingRate), strings.Join(players, ","))
 	s.counterCmd.Env = os.Environ()
 
 	shmPrefix, found = os.LookupEnv(shmPrefixEnv)
@@ -104,7 +118,7 @@ func (s *ShmReader) GetPlayerCount() uint {
 
 // Clean triggers distance reset to 0 in the measuring program
 func (s *ShmReader) Clean() error {
-	return s.counterProcess.Signal(syscall.SIGSTOP)
+	return s.counterProcess.Signal(shmResetSignal)
 }
 
 // Check checks whether in any of the input SHM files distance of the allowed
@@ -138,7 +152,7 @@ func (s *ShmReader) Check() (int, error) {
 func (s *ShmReader) Close() error {
 	var errs []string
 
-	if err := s.counterProcess.Signal(syscall.SIGTERM); err != nil {
+	if err := s.counterProcess.Signal(shmCloseSignal); err != nil {
 		errs = append(errs, err.Error())
 	}
 	for _, f := range s.files {
