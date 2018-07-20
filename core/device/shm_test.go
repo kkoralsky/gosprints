@@ -10,10 +10,10 @@ import (
 
 func TestInitOnePlayer(t *testing.T) {
 	var (
-		s       = &ShmReader{}
-		players = []string{"one"}
+		s     = &ShmReader{}
+		ports = []string{"1"}
 	)
-	s.Init(players, 5, 4)
+	s.Init(ports, 5, 4)
 	if playerCount := s.GetPlayerCount(); playerCount != 1 {
 		t.Errorf("player count should be 1, not %d", playerCount)
 	}
@@ -21,11 +21,11 @@ func TestInitOnePlayer(t *testing.T) {
 
 func TestInitFileCreation(t *testing.T) {
 	var (
-		s       = &ShmReader{}
-		players = []string{"red", "blue"}
-		now     = time.Now()
+		s     = &ShmReader{}
+		ports = []string{"1", "2"}
+		now   = time.Now()
 	)
-	err := s.Init(players, 5, 4)
+	err := s.Init(ports, 5, 4)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,10 +49,15 @@ func TestInitFileCreation(t *testing.T) {
 func TestCounterCommandProcessStartup(t *testing.T) {
 	var (
 		s                  = &ShmReader{}
-		players            = []string{"1", "3"}
+		ports              = []string{"1", "3"}
 		counterExitHandled = make(chan struct{})
+		err                error
 	)
-	err := s.Init(players, 5, 6)
+	err = s.Init(ports, 5, 6)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = s.Start()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,10 +88,15 @@ func TestCounterCommandProcessStartup(t *testing.T) {
 
 func TestCloseErrors(t *testing.T) {
 	var (
-		s       = &ShmReader{}
-		players = []string{"1", "2"}
+		s     = &ShmReader{}
+		ports = []string{"1", "2"}
+		err   error
 	)
-	err := s.Init(players, 5, 6)
+	err = s.Init(ports, 5, 6)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = s.Start()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -105,10 +115,47 @@ func TestCloseErrors(t *testing.T) {
 	}
 }
 
+func TestSimulation(t *testing.T) {
+	var (
+		s     = &ShmReader{}
+		ports = []string{"1", "2"}
+		err   error
+	)
+	if _, found := os.LookupEnv(shmSimulateEnv); !found {
+		t.Fatalf("%s is not set", shmSimulateEnv)
+	}
+	err = s.Init(ports, 4, 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = s.Start()
+	if err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(200 * time.Millisecond) // wait for program to fill some data
+
+	t.Run("test if dists are read", func(tt *testing.T) {
+		for i, _ := range ports {
+			if dist, err := s.GetDist(uint(i)); err != nil {
+				tt.Error(err)
+			} else if dist == 0 {
+				tt.Errorf("distance for player #%d is eq. 0", i)
+			} else {
+				tt.Logf("distance for player #%d is %d", i, dist)
+			}
+		}
+	})
+
+	err = s.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestCheck(t *testing.T) {
 	var (
 		s           = &ShmReader{}
-		players     = []string{"1", "2", "3"}
+		ports       = []string{"1", "2", "3"}
 		shmWFiles   = make([]*os.File, 3)
 		openShmFile = func(index uint) *os.File {
 			f, err := os.OpenFile(s.files[index].Name(), os.O_WRONLY, 0666)
@@ -129,7 +176,7 @@ func TestCheck(t *testing.T) {
 		}
 	)
 
-	err := s.Init(players, 4, 5)
+	err := s.Init(ports, 4, 5)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -139,12 +186,12 @@ func TestCheck(t *testing.T) {
 	shmWFiles[2] = openShmFile(2)
 
 	t.Run("check first player false start", func(tt *testing.T) {
+		truncateShmFiles()
 		writeShmFile(0, "6")
 		writeShmFile(1, "0")
 		writeShmFile(2, "5")
 
 		blame, err := s.Check()
-		truncateShmFiles()
 		if err != nil {
 			tt.Errorf("error on checking out: %s", err.Error())
 		}
@@ -153,12 +200,12 @@ func TestCheck(t *testing.T) {
 		}
 	})
 	t.Run("check no player false start", func(tt *testing.T) {
+		truncateShmFiles()
 		writeShmFile(0, "5")
 		writeShmFile(1, "0")
 		writeShmFile(2, "0")
 
 		blame, err := s.Check()
-		truncateShmFiles()
 		if err != nil {
 			tt.Errorf("error on checking out: %s", err.Error())
 		}
@@ -168,12 +215,12 @@ func TestCheck(t *testing.T) {
 
 	})
 	t.Run("check player 2 and 3 false starting", func(tt *testing.T) {
+		truncateShmFiles()
 		writeShmFile(0, "0")
 		writeShmFile(1, "6")
 		writeShmFile(2, "7")
 
 		blame, err := s.Check()
-		truncateShmFiles()
 		if err != nil {
 			tt.Errorf("error on checking out: %s", err.Error())
 		}
@@ -183,10 +230,10 @@ func TestCheck(t *testing.T) {
 		}
 	})
 	t.Run("check writing garbage to SHM file", func(tt *testing.T) {
+		truncateShmFiles()
 		writeShmFile(2, "xfg1")
 
 		blame, err := s.Check()
-		truncateShmFiles()
 		if err == nil {
 			tt.Error("expected error, got nil")
 		}
