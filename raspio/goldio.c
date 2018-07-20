@@ -9,12 +9,12 @@
 #include <time.h>
 #include <signal.h>
 
-#define MAPSIZE 4096
+#define MAPSIZE sizeof(unsigned int)
 #define FORMAT "/gosprints%d"
 
 struct Pin {
     int port_num;
-    char *map;
+    unsigned int *map;
     int fd;
     int cycle;
     char val;
@@ -66,8 +66,7 @@ void reset() {
     for(i=0; i<len; i++) {
         pins[i].dist=0;
         pins[i].cycle=0;
-        memset(pins[i].map, '\0', sizeof(*(pins[i].map)));
-        sprintf((char*) pins[i].map, "%d", pins[i].dist);
+        *pins[i].map=pins[i].dist;
     }
     printf("reset\n");
 }
@@ -117,7 +116,7 @@ void race(char pull_up, char threshold, int wait) {
                 if(pins[i].cycle==threshold) {
                     pins[i].dist++;
                     pins[i].cycle=0;
-                    sprintf((char*) pins[i].map, "%i", pins[i].dist);
+                    *pins[i].map = pins[i].dist;
                 }
             }
 
@@ -137,7 +136,7 @@ void simulation(char threshold, int wait) {
         }
         for(i=0; i<len; i++) {
             pins[i].dist+=(int)random()%threshold;
-            sprintf((char*) pins[i].map, "%i", pins[i].dist);
+            *pins[i].map = pins[i].dist;
         }
         usleep(random()%wait);
     }
@@ -190,8 +189,12 @@ int main(int argc, char *const* argv)
 
     init(argv[optind], pull_up);
 
-    if(simulate)
+    if(simulate) {
+        if(wait==0) {
+            wait=1;
+        }
         simulation(threshold, wait);
+    }
     else
         race(pull_up, threshold, wait);
 
