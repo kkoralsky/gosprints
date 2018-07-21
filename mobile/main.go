@@ -18,7 +18,7 @@ func main() {
 	var (
 		qmlPath = "assets/mobile.qml"
 	)
-	qmlDebug := flag.Bool("qmldebug", false, "load qml from filesystem rather than from QRC")
+	qmlDebug := flag.Bool("qml_debug", false, "load qml from filesystem rather than from QRC")
 	flag.Parse()
 
 	if !*qmlDebug {
