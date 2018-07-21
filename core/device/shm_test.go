@@ -1,6 +1,7 @@
 package device
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"syscall"
@@ -142,6 +143,31 @@ func TestSimulation(t *testing.T) {
 				tt.Errorf("distance for player #%d is eq. 0", i)
 			} else {
 				tt.Logf("distance for player #%d is %d", i, dist)
+			}
+		}
+	})
+
+	t.Run("test default reset", func(tt *testing.T) {
+		s.Clean()
+		time.Sleep(2800 * time.Millisecond)
+		for i, _ := range ports {
+			if dist, err := s.GetDist(uint(i)); err != nil {
+				tt.Error(err)
+			} else if dist != 0 {
+				tt.Errorf("distance for player #%d is not 0, its %d", i, dist)
+			}
+		}
+	})
+
+	t.Run("test custom reset time", func(tt *testing.T) {
+		s.counterCmd.Env = append(s.counterCmd.Env, fmt.Sprintf("%s=%d", shmWaitAfterResetEnv, 4))
+		s.Clean()
+		time.Sleep(3800 * time.Millisecond)
+		for i, _ := range ports {
+			if dist, err := s.GetDist(uint(i)); err != nil {
+				tt.Error(err)
+			} else if dist != 0 {
+				tt.Errorf("distance for player #%d is not 0, its %d", i, dist)
 			}
 		}
 	})
