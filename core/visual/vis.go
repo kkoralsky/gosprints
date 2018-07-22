@@ -71,6 +71,8 @@ func SetupVis(hostName string, visName string, fullscreen bool, resolutionWidth 
 			ResolutionHeight: uint32(resolutionHeight),
 			MovingUnit:       uint32(movingUnit),
 		})
+
+		vis.NewTournament(context.Background(), &core.DefultTournament)
 	}
 
 	return vis, err

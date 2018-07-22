@@ -51,14 +51,6 @@ type pixelBaseVis struct {
 func (b *pixelBaseVis) Run() {
 	b.fontAtlas = text.NewAtlas(fontFace, text.ASCII, text.RangeTable(unicode.Latin))
 
-	b.NewTournament(context.Background(), &pb.Tournament{
-		Color:       []string{"blue", "red", "green", "yellow"},
-		DestValue:   400,
-		Name:        "default tournament",
-		Mode:        pb.Tournament_DISTANCE,
-		PlayerCount: 2,
-	})
-
 	pixelgl.Run(func() {
 		var err error
 		if b.visCfg.Fullscreen {
@@ -199,6 +191,7 @@ func (b *pixelBaseVis) FinishRace(_ context.Context, results *pb.Results) (*pb.E
 		resultText.Draw(b.win, pixel.IM)
 	}
 
+	b.win.Update()
 	return &pb.Empty{}, nil
 }
 
