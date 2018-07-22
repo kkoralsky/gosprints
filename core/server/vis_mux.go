@@ -112,7 +112,7 @@ func (v *VisMux) CloseRacers() error {
 		closed     = 0
 	)
 	for i, racer := range v.racers {
-		_, err := racer.CloseAndRecv()
+		err := racer.CloseSend()
 		if err != nil {
 			core.ErrorLogger.Printf("error while closing racer %d: %v", i, err)
 		} else {
@@ -122,6 +122,13 @@ func (v *VisMux) CloseRacers() error {
 	v.racers = nil
 	if closed < len_before {
 		return fmt.Errorf("%d racers not closed", len_before-closed)
+	}
+	return nil
+}
+
+func (v *VisMux) FinishRace(results *pb.Results) error {
+	for _, cl := range v.clients {
+		go cl.FinishRace(context.Background(), results)
 	}
 	return nil
 }
