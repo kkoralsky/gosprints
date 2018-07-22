@@ -29,8 +29,9 @@ type SprintsClient struct {
 	_ func(err, msg string) `signal:"error"`
 	_ func(msg string)      `signal:"success"`
 
+	_ int                                                 `property:"connState"`
 	_ func(string, uint, bool) string                     `slot:"dialGrpc"`
-	_ func(string, uint, rune, uint, []string) string     `slot:"newTournament"`
+	_ func(string, uint, int32, uint, []string) string    `slot:"newTournament"`
 	_ func([]string, uint) string                         `slot:"newRace"`
 	_ func() string                                       `slot:"startRace"`
 	_ func() string                                       `slot:"abortRace"`
@@ -52,7 +53,7 @@ func SetupSprintsClient(resultModel *ResultModel) *SprintsClient {
 	client.ConnectConfigureVis(client.configureVis)
 	client.ConnectGetResults(client.getResults)
 
-	client.dialGrpc(defaultHost, defaultPort, false)
+	// client.dialGrpc(defaultHost, defaultPort, false)
 
 	return client
 }
@@ -75,18 +76,23 @@ func (s *SprintsClient) dialGrpc(hostName string, port uint, blocking bool) stri
 	}
 
 	s.client = pb.NewSprintsClient(s.conn)
-	s.connState = s.conn.GetState()
+	s.setConnState()
 	log.InfoLogger.Printf("connection %s dialed to %s", s.connState.String(), s.addr)
 	go s.updateConnectionState()
 
 	return ""
 }
 
+func (s *SprintsClient) setConnState() {
+	s.connState = s.conn.GetState()
+	s.SetConnState(int(s.connState)) // notify qml
+}
+
 func (s *SprintsClient) updateConnectionState() {
 	for s.conn != nil {
 		if s.conn.WaitForStateChange(context.Background(), s.connState) {
 			if s.conn != nil {
-				s.connState = s.conn.GetState()
+				s.setConnState()
 			} else {
 				break
 			}
@@ -99,12 +105,13 @@ func (s *SprintsClient) updateConnectionState() {
 	log.DebugLogger.Printf("stop updating connection state: %s", s.connState.String())
 }
 
-func (s *SprintsClient) newTournament(name string, destValue uint, mode rune, playerCount uint, colors []string) string {
+func (s *SprintsClient) newTournament(name string, destValue uint, mode int, playerCount uint, colors []string) string {
 	var err error
 	s.tournament, err = s.client.NewTournament(context.Background(), &pb.Tournament{
-		Name:        name,
-		DestValue:   uint32(destValue),
-		Mode:        pb.Tournament_TournamentMode(pb.Tournament_TournamentMode_value[string(mode)]),
+		Name:      name,
+		DestValue: uint32(destValue),
+		// Mode:        pb.Tournament_TournamentMode(pb.Tournament_TournamentMode_value[string(mode)]),
+		Mode:        pb.Tournament_TournamentMode(mode),
 		Color:       colors,
 		PlayerCount: uint32(playerCount),
 	})
@@ -134,7 +141,7 @@ func (s *SprintsClient) newRace(playerNames []string, destValue uint) string {
 }
 
 func (s *SprintsClient) startRace() string {
-	_, err := s.client.StartRace(context.Background(), &pb.Starter{CountdownTime: 0})
+	_, err := s.client.StartRace(context.Background(), &pb.Starter{CountdownTime: 3})
 	if err != nil {
 		log.ErrorLogger.Println(err.Error())
 		return err.Error()
