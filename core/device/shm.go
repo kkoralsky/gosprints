@@ -1,8 +1,9 @@
 package device
 
 import (
-	"encoding/binary"
+	// "encoding/binary"
 	"fmt"
+	"github.com/hidez8891/shm"
 	log "github.com/kkoralsky/gosprints/core"
 	"github.com/pkg/errors"
 	"io"
@@ -17,7 +18,7 @@ import (
 const (
 	shmResetSignal              = syscall.SIGABRT
 	shmCloseSignal              = syscall.SIGTERM
-	shmMapSize                  = 4
+	shmMapSize                  = 20
 	shmPrefix                   = "/gosprints"
 	shmDevice                   = "/dev/shm"
 	defaultShmCounterExecutable = "raspio/goldio"
@@ -31,8 +32,9 @@ const (
 
 // ShmReader represents SHM connection to read players distance; implements InputDevice
 type ShmReader struct {
-	playersNum     uint
+	playersCount   uint
 	files          []*os.File
+	segments       []*shm.Memory
 	falseStart     uint
 	threshold      uint
 	counterProcess *os.Process
@@ -80,7 +82,7 @@ func (s *ShmReader) Init(ports []string, samplingRate uint, falseStart uint) err
 
 	s.threshold = samplingRate
 	s.falseStart = falseStart
-	s.playersNum = uint(len(ports))
+	s.playersCount = uint(len(ports))
 
 	for i := 0; i < len(ports); i++ {
 		filename := filepath.Join(shmDevice, fmt.Sprintf("%s%d", shmPrefix, i))
@@ -90,6 +92,13 @@ func (s *ShmReader) Init(ports []string, samplingRate uint, falseStart uint) err
 			return err
 		}
 		s.files = append(s.files, file)
+	}
+	for i := 0; i < len(ports); i++ {
+		mem, err := shm.Open(fmt.Sprintf("%s%d", shmPrefix, i), shmMapSize)
+		if err != nil {
+			return err
+		}
+		s.segments = append(s.segments, mem)
 	}
 
 	return nil
@@ -126,31 +135,51 @@ func (s *ShmReader) Start() error {
 	return nil
 }
 
+func (s *ShmReader) readSegment(i uint) (uint, error) {
+	var (
+		b   = make([]byte, shmMapSize)
+		res uint64
+		n   int
+		err error
+	)
+
+	_, err = s.segments[i].Seek(0, 0)
+	if err != nil {
+		return 0, err
+	}
+	_, err = s.segments[i].Read(b)
+	if err != nil {
+		return 0, err
+	}
+	for n = 0; b[n] != '\x00' && n < shmMapSize; n++ {
+	}
+
+	res, err = strconv.ParseUint(string(b[:n]), 10, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	// if n == 0 {
+	// return 0, fmt.Errorf("map size: %d too small", shmMapSize)
+	// } else if n < 0 {
+	// return 0, errors.New("value overflowed 64 bits")
+	// }
+
+	return uint(res), nil
+}
+
 // GetDist reads current distance of a player from a SHM file
 func (s *ShmReader) GetDist(playerID uint) (uint, error) {
-	var (
-		b      = make([]byte, shmMapSize)
-		res    uint64
-		n      int
-		err    error
-		errCtx = fmt.Sprintf("read from %s failed", s.files[playerID].Name())
-	)
-	s.files[playerID].Seek(0, 0)
-	if _, err := s.files[playerID].Read(b); err != nil {
-		return 0, errors.Wrap(err, errCtx)
-	}
+	var errCtx = fmt.Sprintf("read from %s failed", s.files[playerID].Name())
 
-	res, n = binary.Uvarint(b)
-
-	if n < 0 {
-		return 0, errors.Wrap(err, errCtx)
-	}
-	return uint(res), nil
+	res, err := s.readSegment(playerID)
+	log.DebugLogger.Printf("player %d, distance: %d", playerID, res)
+	return res, errors.Wrap(err, errCtx)
 }
 
 // GetPlayerCount returns number of players that were defined
 func (s *ShmReader) GetPlayerCount() uint {
-	return s.playersNum
+	return s.playersCount
 }
 
 // Clean triggers distance reset to 0 in the measuring program
@@ -161,26 +190,19 @@ func (s *ShmReader) Clean() error {
 // Check checks whether in any of the input SHM files distance of the allowed
 // falseStart was exceeded
 func (s *ShmReader) Check() (int, error) {
-	var buf = make([]byte, 1024)
-	for i, f := range s.files {
-		_, err := f.Seek(0, 0)
+	for i := 0; i < int(s.playersCount); i++ {
+		errCtx := fmt.Sprintf("check failed for %d", i)
+
+		res, err := s.readSegment(uint(i))
 		if err != nil {
-			return -1, err
+			return -1, errors.Wrap(err, errCtx)
 		}
-		err = f.Sync()
-		if err != nil {
-			return -1, err
-		}
-		if _, err := f.Read(buf); err != nil {
-			return -1, err
-		}
-		rotations, err := strconv.ParseUint(strings.TrimRight(string(buf), "\x00"), 10, 32)
-		if err != nil {
-			return -1, err
-		}
-		if rotations > uint64(s.falseStart) {
+
+		log.DebugLogger.Printf("#%d distance: %d", i, res)
+		if res > s.falseStart {
 			return i, nil
 		}
+
 	}
 	return -1, nil
 }
