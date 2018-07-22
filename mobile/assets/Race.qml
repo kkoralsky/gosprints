@@ -39,19 +39,20 @@ Pane {
                 width: pane.width / 3
                 height: 40
                 verticalAlignment: "AlignVCenter"
-                text: newTournamentPage.mode == "D" ? "Distance" : "Time"
+                text: newTournamentPage.mode == NewTournament.TournamentMode.DISTANCE ? "Distance" : "Time"
             }
             SpinBox {
+                id: destValueSpinBox 
                 width: pane.width / 2
                 height: 40
                 value: newTournamentPage.destValue
-                from: newTournamentPage.mode == "D"  ? 50 : 10
-                to: newTournamentPage.mode == "D" ? 4000 : 5*60
+                from: newTournamentPage.mode == NewTournament.TournamentMode.DISTANCE ? 50 : 10
+                to: newTournamentPage.mode == NewTournament.TournamentMode.DISTANCE ? 4000 : 5*60
             }
             Label {
                 height: 40
                 verticalAlignment: "AlignVCenter"
-                text: newTournamentPage.mode == "D" ? "m" : "s"
+                text: newTournamentPage.mode == NewTournament.TournamentMode.DISTANCE ? "m" : "s"
             }
         }
 
@@ -60,27 +61,27 @@ Pane {
             anchors.horizontalCenter: parent.horizontalCenter
 
             Button {
-                text: pane.raceState == Race.State.Preparing ? "New race" : (pane.raceState == Race.State.Starting) ? "Start" : "Stop"
+                text: "New race"
+                enabled: pane.raceState != Race.State.Racing
                 onClicked: {
-                    switch (pane.raceState) {
-                        case Race.State.Preparing:
-                            var racers = []
-                            for(var i=0; i<newRaceRepeater.count; i++) {
-                                racers.push(newRaceRepeater.itemAt(i).children[1].text);
-                            }
-                            pane.raceState = Race.State.Starting
-                            SprintsClient.newRace(racers, 5)
-                            break
-                        case Race.State.Starting:
-                            pane.raceState = Race.State.Racing
-                            SprintsClient.startRace() 
-                            break
-                        case Race.State.Racing:
-                            pane.raceState = Race.State.Preparing
-                            SprintsClient.abortRace()
-                            break
-                        default:
-                            break   // should never happen
+                    var racers = []
+                    for(var i=0; i<newRaceRepeater.count; i++) {
+                        racers.push(newRaceRepeater.itemAt(i).children[1].text);
+                    }
+                    pane.raceState = Race.State.Starting
+                    SprintsClient.newRace(racers, destValueSpinBox.value)
+                }
+            }
+            Button {
+                text: pane.raceState == Race.State.Racing ? "Stop" : "Start"
+                enabled: pane.raceState != Race.State.Preparing
+                onClicked: {
+                    if(pane.raceState==Race.State.Starting) {
+                        pane.raceState = Race.State.Racing
+                        SprintsClient.startRace()
+                    } else if (pane.raceState==Race.State.Racing) {
+                        pane.raceState = Race.State.Preparing 
+                        SprintsClient.abortRace()
                     }
                 }
             }

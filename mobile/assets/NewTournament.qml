@@ -1,31 +1,25 @@
 import QtQuick 2.6
+import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.0
 import QtQuick.Dialogs 1.0
 
 Page {
     id: newTournamentPage
 
+    enum TournamentMode {
+        DISTANCE,
+        TIME
+    }
+
     property string name: tournamentNameTextField.text
     property int playerCount: tournamentPlayerCountSpinBox.value
-    property string mode: "D" // or "T" for time
+    property string mode: NewTournament.TournamentMode.DISTANCE 
     property int destValue: tournamentDesintationSpinBox.value
-
-    Binding {
-       target: newTournamentPage
-       property: "playerCount"
-       value: parseInt(tournamentPlayerCountTextField.text)
-    }
 
     Binding {
         target: newTournamentPage
         property: "mode"
-        value: tournamentDistanceRadio.checked ? "D" : "T"
-    }
-
-    Binding {
-        target: newTournamentPage
-        property: "destValue"
-        value: parseInt(tournament)
+        value: tournamentDistanceRadio.checked ? NewTournament.TournamentMode.DISTANCE : NewTournament.TournamentMode.TIME
     }
 
     Column {
@@ -98,16 +92,34 @@ Page {
             }
         }
 
-        Button {
-            text: "Setup"
-            onClicked: SprintsClient.newTournament(
-                newTournamentPage.name,
-                newTournamentPage.destValue,
-                newTournamentPage.mode,
-                newTournamentPage.playerCount,
-                ["blue", "red", "green", "yellow", "white", "rose", "brown",
-                 "orange", "gray"]  // hardcoded color names FIXME 
-            )
+        RowLayout {
+            width: parent.width
+            Button {
+                Layout.alignment: Qt.AlignRight
+                text: "Setup"
+                onClicked: {
+                    SprintsClient.newTournament(
+                        newTournamentPage.name,
+                        newTournamentPage.destValue,
+                        newTournamentPage.mode,
+                        newTournamentPage.playerCount,
+                        ["blue", "red", "green", "yellow", "white", "rose", "brown",
+                         "orange", "gray"]  // hardcoded color names FIXME 
+                    )
+                    stackView.clear()
+                    stackView.push(tournamentPage)
+                }            
+            }
+            Button {
+                text: "Dismiss"
+                Layout.alignment: Qt.AlignRight
+                onClicked: {
+                    stackView.clear()
+                    stackView.push(tournamentPage)
+                }
+            }
         }
+
+
     }
 }

@@ -17,18 +17,42 @@ ApplicationWindow {
     property int tournamentPlayers: 4
     property alias tabBar: tabBar
 
+    enum ConnState {
+        Idle,
+        Connecting,
+        Ready,
+        TransientFailure,
+        Shutdown
+    }
+
     Component.onCompleted: {
         Qt.application.name = "app name"
         Qt.application.domain = "domain"
         Qt.application.organization = "organization"
 
-        settingsPopup.open()
+        SprintsClient.dialGrpc(settings.connectionHost, settings.connectionPort, false)
     }
 
     Settings {
         id: settings
         property alias connectionHost: connectionHostField.text
         property alias connectionPort: connectionPortField.text
+    }
+
+    Connections {
+        target: SprintsClient
+
+        onConnStateChanged: {
+            if(SprintsClient.connState === App.ConnState.Ready) {
+                connectingOverlay.visible=false
+                settings.connectionHost=connectionHostField.text
+                settings.connectionPort=connectionPortField.text
+            } else {
+                connectingOverlay.visible=true
+            } if (SprintsClient.connState === App.ConnState.TransientFailure) {
+                settingsPopup.open()
+            }
+        }
     }
 
     header: ToolBar {
@@ -66,6 +90,7 @@ ApplicationWindow {
                 contentItem: Text {
                     font.family: FontAwesome.fontFamily
                     text: FontAwesome.ellipsisV
+                    font.pixelSize: 30
                 }
                 onClicked: optionsMenu.open()
 
@@ -160,7 +185,7 @@ ApplicationWindow {
                         SprintsClient.dialGrpc(
                                 connectionHostField.text,
                                 parseInt(connectionPortField.text),
-                                true  // block
+                                false  // dont block
                         )
                         settingsPopup.close()
                     }
@@ -248,13 +273,12 @@ ApplicationWindow {
     }
 
     Rectangle {
+        id: connectingOverlay
         anchors.fill: parent
         color: "black"
         opacity: 0.3
         BusyIndicator {
-            running: ! (SprintsClient.connState === 0 || SprintsClient.connState === 2)
             anchors.centerIn: parent
-            onRunningChanged: console.log(SprintsClient.connState)
         }
     }
 }
