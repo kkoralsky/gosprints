@@ -2,21 +2,23 @@
 ANDROID_ARTIFACT=./deploy/android/build-debug.apk
 LINUX_ARTIFACT=./deploy/linux/mobile
 
-.PHONY: qmlscene runqmldebug runqml\
+.PHONY: qmlscene runqmldebug runqml moc\
 	deploylinux deployandroid runandroid
 
-mobile: main.go moc.go
+mobile: main.go client.go results.go
 	go build
+
+moc: moc.go
 
 deploylinux: $(LINUX_ARTIFACT)
 
 deployandroid: $(ANDROID_ARTIFACT)
 
-runandroid: deployandroid
+runandroid: .runandroid
 	adb install -sr $(ANDROID_ARTIFACT)
 
 qmlscene: 
-	$(QT_DIR)/$(QT_VERSION)/gcc_64/bin/qmlscene assets/mobile.qml
+	$(QT_DIR)/$(QT_VERSION)/gcc_64/bin/qmlscene assets/App.qml
 
 runqmldebug: .qmldebug
 	./mobile -qml_debug 
@@ -30,11 +32,16 @@ moc.go: client.go results.go
 rcc.cpp: rcc.qrc assets/**
 	qtrcc -debug
 
-$(LINUX_ARTIFACT): mobile
+$(LINUX_ARTIFACT): *.go assets/**
 	qtdeploy -debug build linux
+	@touch mobile  # ^ modifies moc.go
 
-$(ANDROID_ARTIFACT): mobile
+$(ANDROID_ARTIFACT): *.go assets/** android/**
 	qtdeploy -debug build android
+	@touch mobile  # ^ modifies moc.go
 
 .qmldebug: mobile
-	@touch .qmldebug
+	@touch $@
+
+.runandroid: $(ANDROID_ARTIFACT)
+	@touch $@
