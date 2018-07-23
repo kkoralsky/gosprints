@@ -171,7 +171,6 @@ func (s *Sprints) doRace() {
 
 	s.visMux.SetupRacers()
 
-	core.DebugLogger.Printf("%s", pb.Tournament_TournamentMode_name[int32(s.tournament.Mode)])
 	if s.tournament.Mode == pb.Tournament_TIME {
 		results = doTimedRace()
 	} else if s.tournament.Mode == pb.Tournament_DISTANCE {
