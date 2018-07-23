@@ -11,5 +11,6 @@
 /mobile/**/*.h
 /mobile/**/moc*.go
 /mobile/**/rcc*.go
+/mobile/.*
 *.cpp
 
