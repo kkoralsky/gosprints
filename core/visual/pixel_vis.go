@@ -43,7 +43,7 @@ type pixelBaseVis struct {
 	playerCount           uint32
 	playerNames           []string
 	destValue             uint32
-	mode                  rune
+	mode                  pb.Tournament_TournamentMode
 	fontAtlas             *text.Atlas
 	modeUnit              string
 }
@@ -76,11 +76,11 @@ func (b *pixelBaseVis) NewTournament(_ context.Context, tournament *pb.Tournamen
 	)
 	b.playerCount = tournament.PlayerCount
 	b.destValue = tournament.DestValue
-	b.mode = rune(pb.Tournament_TournamentMode_name[int32(tournament.Mode)][0])
+	b.mode = tournament.Mode
 	switch b.mode {
-	case 'd':
+	case pb.Tournament_DISTANCE:
 		b.modeUnit = "s"
-	case 't':
+	case pb.Tournament_TIME:
 		b.modeUnit = "m"
 	default:
 		b.modeUnit = ""
