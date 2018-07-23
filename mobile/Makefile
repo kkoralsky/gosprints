@@ -5,7 +5,7 @@ LINUX_ARTIFACT=./deploy/linux/mobile
 .PHONY: qmlscene runqmldebug runqml moc\
 	deploylinux deployandroid runandroid
 
-mobile: main.go client.go results.go
+mobile: main.go client.go results.go rcc.cpp
 	go build
 
 moc: moc.go
