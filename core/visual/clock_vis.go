@@ -14,29 +14,24 @@ const (
 	POINTER_PATH   = "pointer.png"
 )
 
-var (
-	clockSprite   *pixel.Sprite
-	pointerSprite *pixel.Sprite
-)
-
 type clockVis struct {
 	pixelBaseVis
-}
-
-func init() {
-	var err error
-	clockSprite, err = loadSprite(STOPWATCH_PATH)
-	if err != nil {
-		log.ErrorLogger.Fatalf("couldnt load sprite: %s", STOPWATCH_PATH)
-	}
-	pointerSprite, err = loadSprite(POINTER_PATH)
-	if err != nil {
-		log.ErrorLogger.Fatalf("couldnt load sprite: %s", POINTER_PATH)
-	}
+	clockSprite   *pixel.Sprite
+	pointerSprite *pixel.Sprite
 }
 
 func NewClockVis() *clockVis {
+	var err error
 	c := &clockVis{}
+	c.clockSprite, err = loadSprite(STOPWATCH_PATH)
+	if err != nil {
+		log.ErrorLogger.Fatalf("couldnt load sprite: %s", STOPWATCH_PATH)
+	}
+	c.pointerSprite, err = loadSprite(POINTER_PATH)
+	if err != nil {
+		log.ErrorLogger.Fatalf("couldnt load sprite: %s", POINTER_PATH)
+	}
+
 	c.updateRaceFunction = c.updateRace
 	c.drawDashboardFunction = c.drawDashboard
 	return c
@@ -45,7 +40,7 @@ func NewClockVis() *clockVis {
 func (c *clockVis) drawDashboard(playerNum uint32) {
 	var (
 		winWidth       = c.win.Bounds().W()
-		spriteWidth    = clockSprite.Picture().Bounds().W()
+		spriteWidth    = c.clockSprite.Picture().Bounds().W()
 		scale          = (winWidth/float64(c.playerCount) - 10) / spriteWidth
 		clockWidth     = spriteWidth * scale
 		color          = c.colors[int(playerNum)]
@@ -62,14 +57,14 @@ func (c *clockVis) drawDashboard(playerNum uint32) {
 	} else {
 		playerNameText.WriteString(c.playerNames[playerNum])
 	}
-	clockSprite.Draw(c.win, pixel.IM.Scaled(pixel.V(0, 0), scale).Moved(pixel.V(verticalPos, horizontalPos)))
+	c.clockSprite.Draw(c.win, pixel.IM.Scaled(pixel.V(0, 0), scale).Moved(pixel.V(verticalPos, horizontalPos)))
 	playerNameText.Draw(c.win, pixel.IM.Scaled(pixel.V(verticalPos, 120), 2))
 }
 
 func (c *clockVis) clearDashboard(playerNum uint32) {
 	var (
 		winWidth    = c.win.Bounds().W()
-		spriteWidth = clockSprite.Picture().Bounds().W()
+		spriteWidth = c.clockSprite.Picture().Bounds().W()
 		scale       = winWidth / float64(c.playerCount) / spriteWidth
 		clockWidth  = spriteWidth * scale
 		verticalMin = float64(playerNum) * clockWidth
@@ -87,7 +82,7 @@ func (c *clockVis) updateRace(playerNum, dist uint32) {
 	var (
 		angle            = -2 * math.Pi * float64(dist*c.visCfg.MovingUnit) / 360
 		winWidth         = c.win.Bounds().W()
-		clockSpriteWidth = clockSprite.Picture().Bounds().W()
+		clockSpriteWidth = c.clockSprite.Picture().Bounds().W()
 		scale            = (winWidth/float64(c.playerCount) - 10) / clockSpriteWidth
 		clockWidth       = clockSpriteWidth * scale
 		verticalPos      = 5 + float64(playerNum)*clockWidth + clockWidth/2
@@ -96,5 +91,5 @@ func (c *clockVis) updateRace(playerNum, dist uint32) {
 
 	c.clearDashboard(playerNum)
 	c.drawDashboard(playerNum)
-	pointerSprite.Draw(c.win, pixel.IM.Scaled(pixel.ZV, scale).Moved(pos).Rotated(pixel.V(verticalPos, 300-18*scale), angle))
+	c.pointerSprite.Draw(c.win, pixel.IM.Scaled(pixel.ZV, scale).Moved(pos).Rotated(pixel.V(verticalPos, 300-18*scale), angle))
 }
