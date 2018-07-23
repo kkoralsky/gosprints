@@ -183,18 +183,20 @@ func (b *pixelBaseVis) FinishRace(_ context.Context, results *pb.Results) (*pb.E
 	if len(results.Result) > len(b.colors) {
 		return &pb.Empty{}, fmt.Errorf("not enough colors defined to show all results")
 	}
+	var (
+		winCenter  = b.win.Bounds().Center()
+		resultText = text.New(winCenter, b.fontAtlas)
+	)
 	for i, result := range results.Result {
-		h := float64(b.visCfg.ResolutionHeight - (uint32(i)+1)*20)
-		playerText := text.New(pixel.V(float64(b.visCfg.ResolutionWidth/3), h), b.fontAtlas)
-		playerText.Color = b.colors[i]
-		playerText.WriteString(result.Player.Name)
-		playerText.Draw(b.win, pixel.IM)
-
-		resultText := text.New(pixel.V(float64(b.visCfg.ResolutionWidth/2), h), b.fontAtlas)
-		fmt.Fprintf(resultText, "%.3f%s", result.Result, b.modeUnit)
-		resultText.Draw(b.win, pixel.IM)
+		// h := float64(b.visCfg.ResolutionHeight - (uint32(i)+1)*20)
+		resultText.Color = b.colors[i]
+		resultText.WriteString(result.Player.Name)
+		resultText.Color = fontColor
+		fmt.Fprintf(resultText, " %.2f%s\n\n", result.Result, b.modeUnit)
 	}
 
+	resultText.Draw(b.win, pixel.IM.Moved(winCenter.Sub(resultText.Bounds().Center())).
+		Scaled(winCenter, playerNameFontScale))
 	b.win.Update()
 	return &pb.Empty{}, nil
 }

@@ -113,6 +113,26 @@ func Test_ClockVis_UpdateRace(t *testing.T) {
 	vis.UpdateRace(stream)
 }
 
+func TestFinishRace(t *testing.T) {
+	_, err := vis.FinishRace(context.Background(), &pb.Results{
+		Result: []*pb.Result{
+			{
+				Player: &pb.Player{Name: "player1"},
+				// DestValue: uint32(4334),
+				Result: float32(2442.0),
+			},
+			{
+				Player: &pb.Player{Name: "player2"},
+				// DestValue: uint32(43322),
+				Result: float32(3223.4),
+			},
+		},
+	})
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 func Benchmark_ClockVis_UpdateRace(b *testing.B) {
 	vis.NewTournament(context.Background(), &pb.Tournament{
 		Color: []string{"blue", "red"}, DestValue: 400, Mode: 0,
