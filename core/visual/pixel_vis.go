@@ -3,6 +3,7 @@ package visual
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"github.com/gobuffalo/packr"
 	"golang.org/x/image/colornames"
@@ -150,6 +151,9 @@ func (b *pixelBaseVis) AbortRace(_ context.Context, abortMessage *pb.AbortMessag
 }
 
 func (b *pixelBaseVis) StartRace(_ context.Context, starter *pb.Starter) (*pb.Empty, error) {
+	if len(b.playerNames) != int(b.playerCount) {
+		return &pb.Empty{}, errors.New("player names not set properly - run NewRace first")
+	}
 	var (
 		frameSleep = time.Duration(1000*starter.CountdownTime/3) * time.Millisecond
 		winCenter  = b.win.Bounds().Center()
@@ -228,6 +232,10 @@ func (b *pixelBaseVis) ConfigureVis(_ context.Context, visCfg *pb.VisConfigurati
 }
 
 func (b *pixelBaseVis) UpdateRace(stream pb.Visual_UpdateRaceServer) error {
+	if len(b.playerNames) != int(b.playerCount) {
+		return errors.New("player names not set properly - run NewRace first")
+	}
+
 	var (
 		racer *pb.Racer
 		err   error
