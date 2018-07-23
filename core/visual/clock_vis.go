@@ -1,6 +1,7 @@
 package visual
 
 import (
+	"fmt"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/text"
@@ -43,22 +44,26 @@ func NewClockVis() *clockVis {
 
 func (c *clockVis) drawDashboard(playerNum uint32) {
 	var (
-		winWidth      = c.win.Bounds().W()
-		spriteWidth   = clockSprite.Picture().Bounds().W()
-		scale         = (winWidth/float64(c.playerCount) - 10) / spriteWidth
-		clockWidth    = spriteWidth * scale
-		color         = c.colors[int(playerNum)]
-		verticalPos   = 5 + float64(playerNum)*clockWidth + clockWidth/2
-		horizontalPos = float64(300)
+		winWidth       = c.win.Bounds().W()
+		spriteWidth    = clockSprite.Picture().Bounds().W()
+		scale          = (winWidth/float64(c.playerCount) - 10) / spriteWidth
+		clockWidth     = spriteWidth * scale
+		color          = c.colors[int(playerNum)]
+		verticalPos    = 5 + float64(playerNum)*clockWidth + clockWidth/2
+		horizontalPos  = float64(300)
+		racingData, ok = c.racingData[playerNum]
 	)
 
 	c.win.SetColorMask(color)
 	playerNameText := text.New(pixel.V(verticalPos, 120), c.fontAtlas)
 	playerNameText.Dot.X -= playerNameText.BoundsOf(c.playerNames[playerNum]).W() / 2
-	playerNameText.WriteString(c.playerNames[playerNum])
+	if ok {
+		fmt.Fprintf(playerNameText, "%s\n\nD:%.2fm\nV:%.2fkm/h", c.playerNames[playerNum], racingData.realDist, racingData.velo)
+	} else {
+		playerNameText.WriteString(c.playerNames[playerNum])
+	}
 	clockSprite.Draw(c.win, pixel.IM.Scaled(pixel.V(0, 0), scale).Moved(pixel.V(verticalPos, horizontalPos)))
 	playerNameText.Draw(c.win, pixel.IM.Scaled(pixel.V(verticalPos, 120), 2))
-
 }
 
 func (c *clockVis) clearDashboard(playerNum uint32) {
@@ -78,9 +83,9 @@ func (c *clockVis) clearDashboard(playerNum uint32) {
 	imd.Draw(c.win)
 }
 
-func (c *clockVis) updateRace(playerNum, distance uint32) {
+func (c *clockVis) updateRace(playerNum, dist uint32) {
 	var (
-		angle            = -2 * math.Pi * float64(distance*c.visCfg.MovingUnit/10) / 360
+		angle            = -2 * math.Pi * float64(dist*c.visCfg.MovingUnit) / 360
 		winWidth         = c.win.Bounds().W()
 		clockSpriteWidth = clockSprite.Picture().Bounds().W()
 		scale            = (winWidth/float64(c.playerCount) - 10) / clockSpriteWidth
