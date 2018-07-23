@@ -103,4 +103,5 @@ message VisConfiguration {
     uint32 resolutionWidth = 4;
     uint32 resolutionHeight = 5;
     uint32 movingUnit = 6;
+    uint32 distFactor = 7;
 }
