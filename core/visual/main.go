@@ -6,7 +6,7 @@ import (
 
 func VisualServer(cfg core.VisualConfig) {
 	vis, _ := SetupVis(cfg.HostName, cfg.VisName, cfg.Fullscreen, cfg.ResolutionWidth,
-		cfg.ResolutionHeight, cfg.MovingUnit)
+		cfg.ResolutionHeight, cfg.MovingUnit, cfg.DistFactor)
 
 	for vis != nil {
 		visServer, err := SetupVisServer(cfg.Port, cfg.GrpcDebug, vis)

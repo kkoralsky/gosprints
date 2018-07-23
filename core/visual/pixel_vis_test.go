@@ -15,7 +15,7 @@ var (
 
 func TestMain(m *testing.M) {
 	flag.Parse()
-	vis, _ = SetupVis("testing 1 2 3", "clock", false, 640, 480, 1)
+	vis, _ = SetupVis("testing 1 2 3", "clock", false, 640, 480, 1, 25*5)
 	go func() {
 		time.Sleep(1100 * time.Millisecond) // wait for visualization to setup
 		m.Run()
@@ -106,6 +106,7 @@ func Test_ClockVis_UpdateRace(t *testing.T) {
 			&pb.Player{Name: "player2"},
 		},
 	})
+	// maxwait, minwait (nanoseconds), maxdelta mindelta, playerCount, frames
 	stream := NewmockRaces_UpdateRaceServer(5000, 1000, 50, 20, 2, 550)
 	for _, racer := range stream.racers {
 		t.Logf("%d: %d\n", racer.PlayerNum, racer.Distance)

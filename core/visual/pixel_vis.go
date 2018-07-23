@@ -38,15 +38,9 @@ type pixelBaseVis struct {
 	winCfg                *pixelgl.WindowConfig
 	win                   *pixelgl.Window
 	imd                   *imdraw.IMDraw
-	updateRaceFunction    func(playerNum, distance uint32)
+	updateRaceFunction    func(playerNum, dist uint32)
 	drawDashboardFunction func(playerNum uint32)
-	colors                []color.RGBA
-	playerCount           uint32
-	playerNames           []string
-	destValue             uint32
-	mode                  pb.Tournament_TournamentMode
 	fontAtlas             *text.Atlas
-	modeUnit              string
 }
 
 func (b *pixelBaseVis) Run() {
@@ -180,6 +174,7 @@ func (b *pixelBaseVis) StartRace(_ context.Context, starter *pb.Starter) (*pb.Em
 }
 
 func (b *pixelBaseVis) FinishRace(_ context.Context, results *pb.Results) (*pb.Empty, error) {
+	b.win.Clear(backgroundColor)
 	if len(results.Result) > len(b.colors) {
 		return &pb.Empty{}, fmt.Errorf("not enough colors defined to show all results")
 	}
@@ -188,11 +183,10 @@ func (b *pixelBaseVis) FinishRace(_ context.Context, results *pb.Results) (*pb.E
 		resultText = text.New(winCenter, b.fontAtlas)
 	)
 	for i, result := range results.Result {
-		// h := float64(b.visCfg.ResolutionHeight - (uint32(i)+1)*20)
 		resultText.Color = b.colors[i]
 		resultText.WriteString(result.Player.Name)
 		resultText.Color = fontColor
-		fmt.Fprintf(resultText, " %.2f%s\n\n", result.Result, b.modeUnit)
+		fmt.Fprintf(resultText, " %.3f%s\n\n", b.getResult(result.Result), b.modeUnit)
 	}
 
 	resultText.Draw(b.win, pixel.IM.Moved(winCenter.Sub(resultText.Bounds().Center())).
@@ -251,10 +245,13 @@ func (b *pixelBaseVis) UpdateRace(stream pb.Visual_UpdateRaceServer) error {
 				return err
 			}
 		}
+		if time.Now().Sub(b.racingData[racer.PlayerNum].ts) > time.Second {
+			b.updRacingData(racer.PlayerNum, racer.Distance)
+		}
 		b.updateRaceFunction(racer.PlayerNum, racer.Distance)
 		b.win.SetColorMask(colornames.White)
 		if i < fontScaleMax {
-			b.scaleGo(i)
+			b.scaleGo(i * 2)
 		}
 		b.win.Update()
 	}

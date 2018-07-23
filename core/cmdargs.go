@@ -14,7 +14,6 @@ type cliSetup interface {
 
 // ServerConfig is server configuration struct
 type ServerConfig struct {
-	RollerCircum       float64
 	DestValue          uint
 	SamplingRate       uint
 	FailstartThreshold uint
@@ -29,6 +28,7 @@ type ServerConfig struct {
 
 // VisualConfig is visual configuration struct
 type VisualConfig struct {
+	DistFactor       uint
 	Port             uint
 	HostName         string
 	MovingUnit       uint
@@ -41,7 +41,6 @@ type VisualConfig struct {
 
 var (
 	defaultServerConfig = ServerConfig{
-		RollerCircum:       .00025,
 		DestValue:          400,
 		SamplingRate:       5,
 		FailstartThreshold: 5,
@@ -52,6 +51,7 @@ var (
 		GrpcDebug:          false,
 	}
 	defaultVisConfig = VisualConfig{
+		DistFactor:       25 * 5, // 25cm * 5
 		Port:             9998,
 		HostName:         "vision",
 		VisName:          "bar",
@@ -70,8 +70,6 @@ func (s *ServerConfig) Setup() *flag.FlagSet {
 		fmt.Printf("\nserver configuration\n")
 		cfg.PrintDefaults()
 	}
-	cfg.Float64Var(&s.RollerCircum, "roller_circum", defaultServerConfig.RollerCircum,
-		"roller circum in km")
 	cfg.UintVar(&s.DestValue, "dest_value", defaultServerConfig.DestValue,
 		"destination value to reach during a race")
 	cfg.UintVar(&s.SamplingRate, "sampling_rate", defaultServerConfig.SamplingRate,
@@ -125,6 +123,8 @@ func (c *VisualConfig) Setup() *flag.FlagSet {
 		fmt.Printf("\nvisual configuration\n")
 		cfg.PrintDefaults()
 	}
+	cfg.UintVar(&c.DistFactor, "dist_factor", defaultVisConfig.DistFactor,
+		"roller circum in cm * sampling rate (as in server)")
 	cfg.UintVar(&c.Port, "port", defaultVisConfig.Port,
 		"TCP port for GRPC communication w/ \"server\"")
 	cfg.StringVar(&c.HostName, "name", hostName,
