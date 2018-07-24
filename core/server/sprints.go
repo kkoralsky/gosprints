@@ -15,21 +15,26 @@ type Sprints struct {
 	visMux      *VisMux
 	tournament  *pb.Tournament
 	curRace     *pb.Race
-	results     map[int32][]*pb.Result
+	results     map[pb.Gender][]*pb.Result
 	abortRace   chan struct{}
 }
 
-func SetupSprints(device device.InputDevice, visMux *VisMux) *Sprints {
-	return &Sprints{
+func SetupSprints(device device.InputDevice, visMux *VisMux) (s *Sprints) {
+	s = &Sprints{
 		inputDevice: device,
 		visMux:      visMux,
-		tournament:  &core.DefultTournament,
+		results:     make(map[pb.Gender][]*pb.Result, 3),
 	}
+	s.NewTournament(context.Background(), &core.DefultTournament)
+	return s
 }
 
 func (s *Sprints) NewTournament(ctx context.Context, tournament *pb.Tournament) (*pb.Tournament, error) {
 	s.tournament = tournament
-	core.DebugLogger.Printf("%s", pb.Tournament_TournamentMode_name[int32(s.tournament.Mode)])
+	s.results[pb.Gender_MALE] = []*pb.Result{}
+	s.results[pb.Gender_FEMALE] = []*pb.Result{}
+	s.results[pb.Gender_OTHER] = []*pb.Result{}
+
 	return tournament, s.visMux.NewTournament(tournament)
 }
 
@@ -77,7 +82,7 @@ func (s *Sprints) ConfigureVis(_ context.Context, visCfg *pb.VisConfiguration) (
 }
 
 func (s *Sprints) GetResults(resultSpec *pb.ResultSpec, stream pb.Sprints_GetResultsServer) error {
-	for _, result := range s.results[int32(resultSpec.Gender)] {
+	for _, result := range s.results[resultSpec.Gender] {
 		if err := stream.Send(result); err != nil {
 			return err
 		}
@@ -157,11 +162,14 @@ func (s *Sprints) doRace() {
 			var protoResults []*pb.Result
 
 			for playerNum, result := range results {
-				protoResults = append(protoResults, &pb.Result{
+				playerGender := s.curRace.Players[playerNum].Gender
+				resultPb := &pb.Result{
 					DestValue: s.curRace.DestValue,
 					Player:    s.curRace.Players[playerNum],
 					Result:    float32(result),
-				})
+				}
+				protoResults = append(protoResults, resultPb)
+				s.results[playerGender] = append(s.results[playerGender], resultPb)
 			}
 
 			s.curRace = nil
