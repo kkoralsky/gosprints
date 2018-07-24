@@ -3,6 +3,7 @@ package visual
 import (
 	"context"
 	"flag"
+	"math"
 	"testing"
 	"time"
 
@@ -119,13 +120,11 @@ func TestFinishRace(t *testing.T) {
 		Result: []*pb.Result{
 			{
 				Player: &pb.Player{Name: "player1"},
-				// DestValue: uint32(4334),
-				Result: float32(2442.0),
+				Result: float32(2442.0 * math.Pow10(9)), // need to scale, because its interpreted as nanosec
 			},
 			{
 				Player: &pb.Player{Name: "player2"},
-				// DestValue: uint32(43322),
-				Result: float32(3223.4),
+				Result: float32(3223.4 * math.Pow10(9)),
 			},
 		},
 	})
