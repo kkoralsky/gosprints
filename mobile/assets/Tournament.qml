@@ -19,11 +19,15 @@ Page {
 
         Pane {
             id: resultsPane
-            Rectangle {
-                color: "blue"
+            // anchors.fill: parent
+
+            ListView {
                 anchors.fill: parent
+                model: ResultModel
+                delegate: Text {
+                    text: "score:" + score + "  name:" + name
+                }
             }
         }
-
     }
 }
