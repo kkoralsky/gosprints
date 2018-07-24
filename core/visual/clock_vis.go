@@ -39,26 +39,31 @@ func NewClockVis() *clockVis {
 
 func (c *clockVis) drawDashboard(playerNum uint32) {
 	var (
-		winWidth       = c.win.Bounds().W()
-		spriteWidth    = c.clockSprite.Picture().Bounds().W()
-		scale          = (winWidth/float64(c.playerCount) - 10) / spriteWidth
-		clockWidth     = spriteWidth * scale
-		color          = c.colors[int(playerNum)]
-		verticalPos    = 5 + float64(playerNum)*clockWidth + clockWidth/2
-		horizontalPos  = float64(300)
-		racingData, ok = c.racingData[playerNum]
+		winWidth        = c.win.Bounds().W()
+		spriteWidth     = c.clockSprite.Picture().Bounds().W()
+		scale           = (winWidth/float64(c.playerCount) - 10) / spriteWidth
+		clockWidth      = spriteWidth * scale
+		color           = c.colors[int(playerNum)]
+		verticalPos     = 5 + float64(playerNum)*clockWidth + clockWidth/2
+		horizontalPos   = float64(300)
+		racingData, ok  = c.racingData[playerNum]
+		playerName      = c.playerNames[playerNum]
+		dataText        = text.New(pixel.V(verticalPos, 120), c.fontAtlas)
+		playerNameWidth = dataText.BoundsOf(playerName).W()
 	)
 
 	c.win.SetColorMask(color)
-	playerNameText := text.New(pixel.V(verticalPos, 120), c.fontAtlas)
-	playerNameText.Dot.X -= playerNameText.BoundsOf(c.playerNames[playerNum]).W() / 2
+	dataText.Dot.X -= playerNameWidth / 2
+	dataText.WriteString(playerName + "\n\n")
 	if ok {
-		fmt.Fprintf(playerNameText, "%s\n\nD:%.2fm\nV:%.2fkm/h", c.playerNames[playerNum], racingData.realDist, racingData.velo)
-	} else {
-		playerNameText.WriteString(c.playerNames[playerNum])
+		dataText.Dot.X -= playerNameWidth * 3 / 4
+		fmt.Fprintf(dataText, "D:%.2fm\n", racingData.realDist)
+		dataText.Dot.X -= playerNameWidth * 3 / 4
+		fmt.Fprintf(dataText, "V:%.2fkm/h", racingData.velo)
 	}
+
 	c.clockSprite.Draw(c.win, pixel.IM.Scaled(pixel.V(0, 0), scale).Moved(pixel.V(verticalPos, horizontalPos)))
-	playerNameText.Draw(c.win, pixel.IM.Scaled(pixel.V(verticalPos, 120), 2))
+	dataText.Draw(c.win, pixel.IM.Scaled(pixel.V(verticalPos, 120), 2))
 }
 
 func (c *clockVis) clearDashboard(playerNum uint32) {
