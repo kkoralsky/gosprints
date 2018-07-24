@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/gobuffalo/packr"
 	"golang.org/x/image/colornames"
-	"golang.org/x/image/font/basicfont"
+	"golang.org/x/image/font"
 	"image"
 	"image/color"
 	_ "image/png"
@@ -19,15 +19,21 @@ import (
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/faiface/pixel/text"
+	"github.com/golang/freetype/truetype"
 	log "github.com/kkoralsky/gosprints/core"
 	pb "github.com/kkoralsky/gosprints/proto"
 )
 
+const (
+	FONT_PATH = "CourierCode-Roman.ttf"
+)
+
 var (
-	fontFace                    = basicfont.Face7x13
+	fontSize            float64 = 20
 	fontScale           float64 = 30
 	fontScaleMax        float64 = 350
-	playerNameFontScale float64 = 5
+	playerNameFontScale float64 = 2
+	resultsFontScale    float64 = 1
 	fontColor                   = colornames.Skyblue
 	backgroundColor             = colornames.Black
 )
@@ -44,10 +50,17 @@ type pixelBaseVis struct {
 }
 
 func (b *pixelBaseVis) Run() {
-	b.fontAtlas = text.NewAtlas(fontFace, text.ASCII, text.RangeTable(unicode.Latin))
+	var (
+		err  error
+		face font.Face
+	)
+	face, err = loadTTF(FONT_PATH, fontSize)
+	if err != nil {
+		panic(err)
+	}
+	b.fontAtlas = text.NewAtlas(face, text.ASCII, text.RangeTable(unicode.Latin))
 
 	pixelgl.Run(func() {
-		var err error
 		if b.visCfg.Fullscreen {
 			b.winCfg.Monitor = pixelgl.PrimaryMonitor()
 		}
@@ -99,29 +112,26 @@ func (b *pixelBaseVis) NewTournament(_ context.Context, tournament *pb.Tournamen
 }
 
 func (b *pixelBaseVis) NewRace(_ context.Context, race *pb.Race) (*pb.Empty, error) {
-	var (
-		winWidth    = b.win.Bounds().W()
-		winHeight   = b.win.Bounds().H()
-		playerSpace = winHeight / float64(len(race.Players))
-		lineHeight  = b.fontAtlas.LineHeight()
-	)
+	var winCenter = b.win.Bounds().Center()
 
 	b.win.Clear(backgroundColor)
 	b.playerNames = nil
+	starterText := text.New(winCenter, b.fontAtlas)
+	starterText.LineHeight = b.fontAtlas.LineHeight() * 2.5
 	for i, p := range race.Players {
-		playerWriter := text.New(pixel.V(winWidth/2, winHeight-float64(i)*playerSpace-playerSpace/2+lineHeight/2), b.fontAtlas)
-		playerWriter.Color = b.colors[i]
-		playerWriter.Orig.X -= playerWriter.BoundsOf(p.Name).W() / 2
-		playerWriter.WriteString(p.Name)
-		playerWriter.Draw(b.win, pixel.IM.Scaled(playerWriter.Bounds().Center(), playerNameFontScale))
-		b.playerNames = append(b.playerNames, p.Name)
+		starterText.Color = b.colors[i]
+		starterText.Dot.X -= starterText.BoundsOf(p.Name).W() / 2
+		starterText.WriteString(p.Name + "\n")
 
+		b.playerNames = append(b.playerNames, p.Name)
 		if i+1 != len(race.Players) {
-			vsWriter := text.New(pixel.V(winWidth/2-10, winHeight-float64(i+1)*playerSpace+lineHeight/2), b.fontAtlas)
-			vsWriter.WriteString("vs")
-			vsWriter.Draw(b.win, pixel.IM.Scaled(vsWriter.Bounds().Center(), playerNameFontScale))
+			starterText.Color = fontColor
+			starterText.Dot.X -= starterText.BoundsOf("vs").W() / 2
+			starterText.WriteString("vs\n")
 		}
 	}
+	starterText.Draw(b.win, pixel.IM.Scaled(starterText.Bounds().Center(), playerNameFontScale).
+		Moved(pixel.V(0, starterText.Bounds().H()/2)))
 	b.win.Update()
 	return &pb.Empty{}, nil
 }
@@ -138,7 +148,7 @@ func (b *pixelBaseVis) AbortRace(_ context.Context, abortMessage *pb.AbortMessag
 	}
 	messageText.WriteString(abortMessage.Message)
 	messageText.Draw(b.win, pixel.IM.Moved(pixel.V(-messageText.Bounds().W()/2,
-		-messageText.Bounds().H()/3)).Scaled(winCenter, 7))
+		-messageText.Bounds().H()/3)).Scaled(winCenter, fontScale))
 
 	b.win.Update()
 	return &pb.Empty{}, nil
@@ -205,9 +215,9 @@ func (b *pixelBaseVis) ShowResults(_ context.Context, results *pb.Results) (*pb.
 	resultsText.TabWidth = 50
 
 	for i, result := range results.Result {
-		fmt.Fprintf(resultsText, "%3d.\t%s\t\t\t\t\t\t\t\t%10.3f\n", i+1, result.Player.Name, result.Result)
+		fmt.Fprintf(resultsText, "%3d.%s\t\t%10.3f\n", i+1, result.Player.Name, result.Result)
 	}
-	resultsText.Draw(b.win, pixel.IM.Moved(winCenter.Sub(resultsText.Bounds().Center())).Scaled(winCenter, 1.5))
+	resultsText.Draw(b.win, pixel.IM.Moved(winCenter.Sub(resultsText.Bounds().Center())).Scaled(winCenter, resultsFontScale))
 
 	b.win.Update()
 	return &pb.Empty{}, nil
@@ -306,4 +316,21 @@ func loadSprite(path string) (*pixel.Sprite, error) {
 		return &pixel.Sprite{}, err
 	}
 	return pixel.NewSprite(picture, picture.Bounds()), nil
+}
+
+func loadTTF(path string, size float64) (font.Face, error) {
+	box := packr.NewBox("./assets")
+	font_bytes, err := box.MustBytes(path)
+	if err != nil {
+		return nil, err
+	}
+	font, err := truetype.Parse(font_bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return truetype.NewFace(font, &truetype.Options{
+		Size:              size,
+		GlyphCacheEntries: 1,
+	}), nil
 }
