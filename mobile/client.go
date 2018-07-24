@@ -202,7 +202,7 @@ func (s *SprintsClient) getResults(gender string) {
 		s.resultModel.AddResult(
 			result.Player.Name,
 			pb.Gender_name[int32(result.Player.Gender)],
-			uint(result.Result),
+			result.Result,
 			uint(result.DestValue))
 	}
 	return

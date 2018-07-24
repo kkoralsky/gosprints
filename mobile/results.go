@@ -19,16 +19,16 @@ type ResultModel struct {
 	_ map[int]*core.QByteArray `property:"roles"`
 	_ []*Result                `property:"results"`
 
-	_ func(string, string, uint, uint) `slot:"addResult"`
+	_ func(string, string, float32, uint) `slot:"addResult"`
 }
 
 type Result struct {
 	core.QObject
 
-	_ string `property:"name"`
-	_ uint32 `property:"score"`
-	_ uint32 `property:"destValue"`
-	_ string `property:"gender"`
+	_ string  `property:"name"`
+	_ float32 `property:"score"`
+	_ uint32  `property:"destValue"`
+	_ string  `property:"gender"`
 }
 
 func init() {
@@ -37,9 +37,10 @@ func init() {
 
 func (r *ResultModel) init() {
 	r.SetRoles(map[int]*core.QByteArray{
-		Name:   core.NewQByteArray2("Name", len("Name")),
-		Score:  core.NewQByteArray2("Score", len("Score")),
-		Gender: core.NewQByteArray2("Gemder", len("Gender")),
+		Name:      core.NewQByteArray2("name", len("name")),
+		Score:     core.NewQByteArray2("score", len("score")),
+		Gender:    core.NewQByteArray2("gender", len("gender")),
+		DestValue: core.NewQByteArray2("destValue", len("destValue")),
 	})
 
 	r.ConnectRowCount(r.rowCount)
@@ -47,7 +48,7 @@ func (r *ResultModel) init() {
 	r.ConnectData(r.data)
 	r.ConnectRoleNames(r.roleNames)
 	r.ConnectAddResult(r.addResult)
-	r.ConnectModelReset(r.modelReset)
+	// r.ConnectModelReset(r.modelReset)
 }
 
 func (r *ResultModel) rowCount(parent *core.QModelIndex) int {
@@ -71,7 +72,7 @@ func (r *ResultModel) data(index *core.QModelIndex, role int) *core.QVariant {
 	case Gender:
 		return core.NewQVariant14(result.Gender())
 	case Score:
-		return core.NewQVariant8(result.Score())
+		return core.NewQVariant13(result.Score())
 	case DestValue:
 		return core.NewQVariant8(result.DestValue())
 	default:
@@ -84,10 +85,12 @@ func (r *ResultModel) roleNames() map[int]*core.QByteArray {
 }
 
 func (r *ResultModel) modelReset() {
-	r.SetResults([]*Result{})
+	r.BeginResetModel()
+	r.SetResults(nil)
+	r.EndResetModel()
 }
 
-func (r *ResultModel) addResult(playerName, gender string, score, destValue uint) {
+func (r *ResultModel) addResult(playerName, gender string, score float32, destValue uint) {
 	r.BeginInsertRows(core.NewQModelIndex(), len(r.Results()), len(r.Results()))
 
 	result := NewResult(nil)
