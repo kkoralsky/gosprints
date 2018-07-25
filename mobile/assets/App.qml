@@ -12,7 +12,7 @@ ApplicationWindow {
     width: 360
     height: 520
     visible: true
-    title: "Gosprints control app"
+    // title: "Gosprints control app"
 
     property int tournamentPlayers: 4
     property alias tabBar: tabBar

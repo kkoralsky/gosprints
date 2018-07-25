@@ -17,17 +17,9 @@ Page {
             id: racePane
         }
 
-        Pane {
+        Results {
             id: resultsPane
-            // anchors.fill: parent
 
-            ListView {
-                anchors.fill: parent
-                model: ResultModel
-                delegate: Text {
-                    text: "score:" + score + "  name:" + name
-                }
-            }
         }
     }
 }
