@@ -7,6 +7,7 @@ import (
 	"github.com/kkoralsky/gosprints/core"
 	"github.com/kkoralsky/gosprints/core/device"
 	pb "github.com/kkoralsky/gosprints/proto"
+	"sort"
 	"time"
 )
 
@@ -82,7 +83,17 @@ func (s *Sprints) ConfigureVis(_ context.Context, visCfg *pb.VisConfiguration) (
 }
 
 func (s *Sprints) GetResults(resultSpec *pb.ResultSpec, stream pb.Sprints_GetResultsServer) error {
-	for _, result := range s.results[resultSpec.Gender] {
+	var results []*pb.Result
+	copy(results, s.results[resultSpec.Gender])
+	sort.Slice(results, func(i, j int) bool {
+		if s.tournament.Mode == pb.Tournament_TIME {
+			return results[i].Result < results[j].Result
+		} else {
+			return results[i].Result > results[j].Result
+		}
+	})
+
+	for _, result := range results {
 		if err := stream.Send(result); err != nil {
 			return err
 		}
