@@ -2,12 +2,9 @@ package main
 
 import (
 	"flag"
-	gosp "github.com/kkoralsky/gosprints/core"
-	pb "github.com/kkoralsky/gosprints/proto"
 	"github.com/therecipe/qt/core"
 	"github.com/therecipe/qt/gui"
 	"github.com/therecipe/qt/qml"
-	"google.golang.org/grpc/connectivity"
 	"testing"
 )
 
