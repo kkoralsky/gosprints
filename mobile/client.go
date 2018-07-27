@@ -39,6 +39,16 @@ type SprintsClient struct {
 	_ func(string)                                        `slot:"getResults"`
 }
 
+type SprintsClientInterface interface {
+	dialGrpc(string, uint, bool) string
+	newTournament(string, uint, int32, uint, []string) string
+	newRace([]string, uint) string
+	startRace() string
+	abortRace() string
+	configureVis(string, string, bool, uint, uint, uint) string
+	getResults(string)
+}
+
 func SetupSprintsClient(resultModel *ResultModel) *SprintsClient {
 	client := NewSprintsClient(nil)
 

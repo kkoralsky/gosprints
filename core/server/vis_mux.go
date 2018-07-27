@@ -10,6 +10,19 @@ import (
 	"time"
 )
 
+type VisMuxInterface interface {
+	NewTournament(*pb.Tournament)
+	NewRace(*pb.Race)
+	StartRace(*pb.Starter)
+	AbortRace(*pb.AbortMessage)
+	ConfigureVis(*pb.VisConfiguration)
+	connectionStateUpdater()
+	SetupRacers()
+	SendRaceUpdate(uint32, uint32)
+	CloseRacers()
+	FinishRace(*pb.Results)
+}
+
 type VisMux struct {
 	addresses   []string
 	connections []*grpc.ClientConn
