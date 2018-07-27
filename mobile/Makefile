@@ -26,7 +26,7 @@ runqmldebug: .qmldebug
 runqml: .qmldebug rcc.cpp
 	./mobile
 
-moc.go: client.go results.go
+moc.go: client.go results.go client_mock.go
 	qtmoc -debug
 
 rcc.cpp: rcc.qrc assets/**
