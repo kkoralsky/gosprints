@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/kkoralsky/gosprints/core"
 	pb "github.com/kkoralsky/gosprints/proto"
 )
 
@@ -15,8 +16,9 @@ var (
 )
 
 func TestMain(m *testing.M) {
+	vis_name := flag.String("vis_name", "clock", "either clock or bar")
 	flag.Parse()
-	vis, _ = SetupVis("testing 1 2 3", "clock", false, 640, 480, 1, 25*5)
+	vis, _ = SetupVis("gosprints", *vis_name, false, 640, 480, 1, 25*5)
 	go func() {
 		time.Sleep(1100 * time.Millisecond) // wait for visualization to setup
 		m.Run()
@@ -39,33 +41,7 @@ func Test_PixelVis_NewRace(t *testing.T) {
 
 func Test_PixelVis_ShowResults(t *testing.T) {
 	var resultSet = []pb.Results{
-		pb.Results{Result: []*pb.Result{
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 231.3},
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 231.3},
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 2931.3},
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 231.3},
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 231.3},
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 231.3},
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 231.3},
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 231.3},
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 231.3},
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 231.3},
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 231.3},
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 231.3},
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 231.3},
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 231.3},
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 231.3},
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 23031.3},
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 231.3},
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 231.3},
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 44231.3},
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 1.3},
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 231.3},
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 29931.3},
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 2931.3},
-			&pb.Result{DestValue: 10, Player: &pb.Player{Gender: pb.Gender(0), Name: "ktos"}, Result: 231.3},
-		},
-		},
+		pb.Results{Result: core.DummyResults},
 	}
 
 	for _, results := range resultSet {
@@ -82,7 +58,7 @@ func Test_PixelVis_Abort(t *testing.T) {
 	vis.AbortRace(context.Background(), &pb.AbortMessage{"fdospf safdso pfs fopsafa fd a"})
 }
 
-func Test_ClockVis_StartRace(t *testing.T) {
+func Test_PixelVis_StartRace(t *testing.T) {
 	vis.NewTournament(context.Background(), &pb.Tournament{
 		Color: []string{"blue", "red"}, DestValue: 400, Mode: 0,
 		Name: "testing 1 2 3", PlayerCount: 2})
@@ -96,7 +72,7 @@ func Test_ClockVis_StartRace(t *testing.T) {
 	vis.StartRace(context.Background(), &pb.Starter{3})
 }
 
-func Test_ClockVis_UpdateRace(t *testing.T) {
+func Test_PixelVis_UpdateRace(t *testing.T) {
 	vis.NewTournament(context.Background(), &pb.Tournament{
 		Color: []string{"blue", "red"}, DestValue: 400, Mode: 0,
 		Name: "testing 1 2 3", PlayerCount: 2})
