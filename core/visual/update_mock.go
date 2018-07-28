@@ -13,12 +13,13 @@ type mockRaces_UpdateRaceServer struct {
 	maxWait      int
 	minWait      int
 	currentRacer int
+	finishTime   time.Time
 }
 
 func NewmockRaces_UpdateRaceServer(
 	maxWait, minWait,
 	maxDistanceDelta, minDistanceDelta,
-	playerCount, racersCount int) *mockRaces_UpdateRaceServer {
+	playerCount, maxDistance, maxTime int) *mockRaces_UpdateRaceServer {
 
 	rand.Seed(600)
 	var (
@@ -26,9 +27,12 @@ func NewmockRaces_UpdateRaceServer(
 			minWait:      minWait,
 			maxWait:      maxWait,
 			currentRacer: 0,
+			finishTime:   time.Now().Add(time.Duration(maxTime) * time.Second),
 		}
-		prevDistance = 0
-		currPlayer   = 0
+		prevDistance   uint32 = 0
+		currDistance   uint32 = 0
+		currPlayer     uint32 = 0
+		playerFinished uint32 = 0
 	)
 
 	for i := 0; i < playerCount; i++ {
@@ -38,16 +42,20 @@ func NewmockRaces_UpdateRaceServer(
 		})
 	}
 
-	for i := playerCount; i < racersCount; i++ {
-		prevDistance = int(m.racers[i-currPlayer-playerCount].Distance)
+	for i := playerCount; playerFinished < uint32(playerCount); i++ {
+		prevDistance = m.racers[i-int(currPlayer)-playerCount].Distance
+		currDistance = prevDistance + uint32(rand.Intn(maxDistanceDelta-minDistanceDelta)+minDistanceDelta)
 
 		m.racers = append(m.racers, &pb.Racer{
-			PlayerNum: uint32(currPlayer),
-			Distance:  uint32(prevDistance + rand.Intn(maxDistanceDelta-minDistanceDelta) + minDistanceDelta),
+			PlayerNum: currPlayer,
+			Distance:  currDistance,
 		})
+		if currDistance > uint32(maxDistance) {
+			playerFinished++
+		}
 
 		currPlayer++
-		if currPlayer == playerCount {
+		if currPlayer == uint32(playerCount) {
 			currPlayer = 0
 		}
 	}
@@ -61,9 +69,9 @@ func (m *mockRaces_UpdateRaceServer) SendAndClose(*pb.Empty) error {
 func (m *mockRaces_UpdateRaceServer) Recv() (*pb.Racer, error) {
 	m.currentRacer++
 	if m.maxWait != 0 {
-		time.Sleep(time.Duration(rand.Intn(m.maxWait-m.minWait)+m.minWait) * time.Nanosecond)
+		time.Sleep(time.Duration(rand.Intn(m.maxWait-m.minWait)+m.minWait) * time.Millisecond)
 	}
-	if m.currentRacer >= len(m.racers) {
+	if m.currentRacer >= len(m.racers) || time.Now().After(m.finishTime) {
 		return nil, io.EOF
 	}
 	return m.racers[m.currentRacer], nil

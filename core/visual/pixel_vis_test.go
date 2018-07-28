@@ -53,9 +53,12 @@ func Test_PixelVis_ShowResults(t *testing.T) {
 func Test_PixelVis_Abort(t *testing.T) {
 	vis.AbortRace(context.Background(), &pb.AbortMessage{"aborted"})
 	time.Sleep(1 * time.Second)
+	vis.Clear()
 	vis.AbortRace(context.Background(), &pb.AbortMessage{"falsestart"})
 	time.Sleep(1 * time.Second)
+	vis.Clear()
 	vis.AbortRace(context.Background(), &pb.AbortMessage{"fdospf safdso pfs fopsafa fd a"})
+	time.Sleep(1 * time.Second)
 }
 
 func Test_PixelVis_StartRace(t *testing.T) {
@@ -74,7 +77,7 @@ func Test_PixelVis_StartRace(t *testing.T) {
 
 func Test_PixelVis_UpdateRace(t *testing.T) {
 	vis.NewTournament(context.Background(), &pb.Tournament{
-		Color: []string{"blue", "red"}, DestValue: 400, Mode: 0,
+		Color: []string{"blue", "red"}, DestValue: 400, Mode: pb.Tournament_TIME,
 		Name: "testing 1 2 3", PlayerCount: 2})
 	vis.NewRace(context.Background(), &pb.Race{
 		DestValue: 400,
@@ -83,12 +86,25 @@ func Test_PixelVis_UpdateRace(t *testing.T) {
 			&pb.Player{Name: "player2"},
 		},
 	})
-	// maxwait, minwait (nanoseconds), maxdelta mindelta, playerCount, frames
-	stream := NewmockRaces_UpdateRaceServer(5000, 1000, 50, 20, 2, 550)
-	for _, racer := range stream.racers {
-		t.Logf("%d: %d\n", racer.PlayerNum, racer.Distance)
-	}
-	vis.UpdateRace(stream)
+	t.Run("test 10sec race", func(tt *testing.T) {
+		// maxwait, minwait (miliseconds), maxdelta mindelta, playerCount, maxDistance, maxTime (seconds)
+		stream := NewmockRaces_UpdateRaceServer(50, 10, 8, 2, 2, 1000, 10)
+		for _, racer := range stream.racers {
+			tt.Logf("%d: %d\n", racer.PlayerNum, racer.Distance)
+		}
+		vis.UpdateRace(stream)
+	})
+	time.Sleep(time.Second)
+	vis.Clear()
+	t.Run("test 500 dist race", func(tt *testing.T) {
+		stream := NewmockRaces_UpdateRaceServer(50, 10, 8, 2, 2, 500, math.MaxInt32)
+		for _, racer := range stream.racers {
+			tt.Logf("%d: %d\n", racer.PlayerNum, racer.Distance)
+		}
+		vis.UpdateRace(stream)
+	})
+	time.Sleep(time.Second)
+	// vis.Clear()
 }
 
 func TestFinishRace(t *testing.T) {
@@ -121,7 +137,7 @@ func Benchmark_ClockVis_UpdateRace(b *testing.B) {
 		},
 	})
 
-	stream := NewmockRaces_UpdateRaceServer(0, 0, 50, 10, 2, 4)
+	stream := NewmockRaces_UpdateRaceServer(0, 0, 50, 10, 2, 4, math.MaxInt32)
 	b.Run("4 clock moves", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			vis.UpdateRace(stream)
