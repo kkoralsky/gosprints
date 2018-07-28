@@ -16,6 +16,7 @@ type VisInterface interface {
 	ResetConfiguration() bool
 	IsConfigured() bool
 	GetVisCfg() *pb.VisConfiguration
+	Clear()
 	updRacingData(playerNum, distance uint32) (realDistance, velocity float32)
 }
 
@@ -97,6 +98,8 @@ func selectVis(visName string) (VisInterface, error) {
 		return NewBarVis(), nil
 	case "clock":
 		return NewClockVis(), nil
+	case "clock2":
+		return NewClock2Vis(), nil
 	case "game":
 		return NewGameVis(), nil
 	default:
