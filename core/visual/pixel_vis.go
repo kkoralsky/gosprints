@@ -25,14 +25,14 @@ import (
 )
 
 const (
-	FONT_PATH = "CourierCode-Roman.ttf"
+	FONT_PATH = "m50.ttf"
 )
 
 var (
 	fontSize            float64 = 20
-	fontScale           float64 = 30
+	fontScale           float64 = 10
 	fontScaleMax        float64 = 350
-	playerNameFontScale float64 = 2
+	playerNameFontScale float64 = 1.2
 	resultsFontScale    float64 = 1
 	fontColor                   = colornames.Skyblue
 	backgroundColor             = colornames.Black
@@ -114,7 +114,7 @@ func (b *pixelBaseVis) NewTournament(_ context.Context, tournament *pb.Tournamen
 func (b *pixelBaseVis) NewRace(_ context.Context, race *pb.Race) (*pb.Empty, error) {
 	var winCenter = b.win.Bounds().Center()
 
-	b.win.Clear(backgroundColor)
+	b.Clear()
 	b.playerNames = nil
 	starterText := text.New(winCenter, b.fontAtlas)
 	starterText.LineHeight = b.fontAtlas.LineHeight() * 2.5
@@ -184,7 +184,8 @@ func (b *pixelBaseVis) StartRace(_ context.Context, starter *pb.Starter) (*pb.Em
 }
 
 func (b *pixelBaseVis) FinishRace(_ context.Context, results *pb.Results) (*pb.Empty, error) {
-	b.win.Clear(backgroundColor)
+	b.Clear()
+
 	if len(results.Result) > len(b.colors) {
 		return &pb.Empty{}, fmt.Errorf("not enough colors defined to show all results")
 	}
@@ -209,7 +210,7 @@ func (b *pixelBaseVis) ShowResults(_ context.Context, results *pb.Results) (*pb.
 	var (
 		winCenter = b.win.Bounds().Center()
 	)
-	b.win.Clear(backgroundColor)
+	b.Clear()
 
 	resultsText := text.New(winCenter, b.fontAtlas)
 	resultsText.TabWidth = 50
@@ -260,9 +261,9 @@ func (b *pixelBaseVis) UpdateRace(stream pb.Visual_UpdateRaceServer) error {
 		}
 		b.updateRaceFunction(racer.PlayerNum, racer.Distance)
 		b.win.SetColorMask(colornames.White)
-		if i < fontScaleMax {
-			b.scaleGo(i * 2)
-		}
+		// if i < fontScaleMax {
+		// b.scaleGo(i * 2)
+		// }
 		b.win.Update()
 	}
 	return nil
@@ -287,11 +288,15 @@ func (b *pixelBaseVis) scaleGo(scale float64) {
 }
 
 func (b *pixelBaseVis) drawDashboards() {
-	b.win.Clear(backgroundColor)
+	b.Clear()
 	for i := 0; i < int(b.playerCount); i++ {
 		b.drawDashboardFunction(uint32(i))
 	}
 	b.win.SetColorMask(colornames.White)
+}
+
+func (b *pixelBaseVis) Clear() {
+	b.win.Clear(backgroundColor)
 }
 
 func loadPicture(path string) (pixel.Picture, error) {
