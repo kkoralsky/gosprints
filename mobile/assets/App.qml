@@ -231,14 +231,6 @@ ApplicationWindow {
         width: Math.min(window.width, window.height) / 3 * 2
         contentHeight: loadTournamentColumn.height
 
-        Connections {
-            target: TournamentConfig
-            onCurrentIndexChanged: {
-                // console.log(TournamentConfig.currentIndex)
-                loadTournamentCombo.currentIndex = TournamentConfig.currentIndex
-            } 
-        }
-
         Column {
             id: loadTournamentColumn
             width: parent.width

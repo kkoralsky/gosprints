@@ -141,14 +141,17 @@ func (s *SprintsClient) replaceTournamentConfig() {
 		return
 	}
 
+	// keep it in that order, so that currentIndex can be populated properly
+	// into QML
+	s.tournamentConfig.SetTournaments(tournamentNames.Name)
 	for i, name := range tournamentNames.Name {
 		if name == s.tournament.Name {
 			s.tournamentConfig.SetCurrentIndex(i)
 		}
 	}
 
-	s.tournamentConfig.SetTournaments(tournamentNames.Name)
 	s.updateCurrentTournament()
+
 }
 
 func (s *SprintsClient) updateCurrentTournament() {
