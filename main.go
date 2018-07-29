@@ -17,7 +17,7 @@ func main() {
 	flag.Parse()
 
 	args := flag.Args()
-	if flag.NArg() > 1 {
+	if flag.NArg() > 0 {
 		switch args[0] {
 		case "server":
 			cfg := core.ServerConfig{}
