@@ -142,6 +142,9 @@ func (s *ShmReader) readSegment(i uint) (uint, error) {
 		n   int
 		err error
 	)
+	if int(i) > len(s.segments) {
+		return 0, errors.New("segment not initialized")
+	}
 
 	_, err = s.segments[i].Seek(0, 0)
 	if err != nil {
@@ -154,23 +157,23 @@ func (s *ShmReader) readSegment(i uint) (uint, error) {
 	for n = 0; b[n] != '\x00' && n < shmMapSize; n++ {
 	}
 
+	if n == shmMapSize {
+		return 0, fmt.Errorf("map size: %d too small", shmMapSize)
+	} else if n == 0 {
+		return 0, errors.New("nothing has been read")
+	}
+
 	res, err = strconv.ParseUint(string(b[:n]), 10, 64)
 	if err != nil {
 		return 0, err
 	}
-
-	// if n == 0 {
-	// return 0, fmt.Errorf("map size: %d too small", shmMapSize)
-	// } else if n < 0 {
-	// return 0, errors.New("value overflowed 64 bits")
-	// }
 
 	return uint(res), nil
 }
 
 // GetDist reads current distance of a player from a SHM file
 func (s *ShmReader) GetDist(playerID uint) (uint, error) {
-	var errCtx = fmt.Sprintf("read from %s failed", s.files[playerID].Name())
+	var errCtx = fmt.Sprintf("reading for %d player failed", playerID)
 
 	res, err := s.readSegment(playerID)
 	log.DebugLogger.Printf("player %d, distance: %d", playerID, res)
