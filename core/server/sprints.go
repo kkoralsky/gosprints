@@ -76,6 +76,7 @@ func (s *Sprints) loadTournament(tournament *pb.Tournament) {
 			result.Result,
 		)
 	}
+	s.visMux.NewTournament(tournament)
 }
 
 func (s *Sprints) GetTournamentNames(context.Context, *pb.Empty) (*pb.TournamentNames, error) {
@@ -225,7 +226,7 @@ func (s *Sprints) doRace() {
 					select {
 					case <-s.abortRace:
 						close(s.abortRace)
-						return playersDists
+						return nil
 					default:
 						getDistance(i)
 					}
