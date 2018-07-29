@@ -20,6 +20,7 @@ type ServerConfig struct {
 	Port               uint
 	RaceMode           rune
 	raceMode           string
+	DbPath             string
 	InputDevice        string
 	OutputVisuals      string
 	GrpcDebug          bool
@@ -48,6 +49,7 @@ var (
 		RaceMode:           't',
 		InputDevice:        "SHM:5,6",
 		OutputVisuals:      "localhost:9998",
+		DbPath:             "sprints.pb",
 		GrpcDebug:          false,
 	}
 	defaultVisConfig = VisualConfig{
@@ -83,6 +85,8 @@ func (s *ServerConfig) Setup() *flag.FlagSet {
 		"race mode: either t for time constrained race or d for distance constrained")
 	cfg.StringVar(&s.InputDevice, "input_device", defaultServerConfig.InputDevice,
 		"in the form: <type>:<device1_spec>,<device2_spec>,...")
+	cfg.StringVar(&s.DbPath, "db_path", defaultServerConfig.DbPath,
+		"file where to load & save tournament data")
 	cfg.StringVar(&s.OutputVisuals, "visuals", defaultServerConfig.OutputVisuals,
 		"comma seperated output visual addresses ie. ip:port,hostname:port etc.")
 	cfg.BoolVar(&s.GrpcDebug, "grpc_debug", defaultServerConfig.GrpcDebug,

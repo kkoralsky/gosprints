@@ -9,7 +9,10 @@ service Sprints {
     rpc AbortRace(AbortMessage) returns (Empty);
     rpc ConfigureVis(VisConfiguration) returns (Empty);
     rpc GetResults(ResultSpec) returns (stream Result);
-    rpc GetTournaments(Empty) returns (stream Tournament);
+    rpc GetTournamentNames(Empty) returns (TournamentNames);
+    rpc GetCurrentTournament(Empty) returns (Tournament);
+    rpc LoadTournament(TournamentSpec) returns (Tournament);
+    rpc ShowResults(ResultSpec) returns (Empty);
 }
 
 service Visual {
@@ -51,6 +54,18 @@ message Result {
     uint32 destValue = 3;
 }
 
+message Tournaments {
+    repeated Tournament tournament = 1;
+}
+
+message TournamentNames {
+    repeated string name = 1;
+}
+
+message TournamentSpec {
+    string name = 1;
+}
+
 message DefinedPlayer {
     string color = 1;
     uint32 racesRemaining = 2;
@@ -89,6 +104,7 @@ message Tournament {
     TournamentMode mode = 4;
     uint32 playerCount = 5;
     repeated string color = 6;
+    repeated Result result = 7;
 
     enum TournamentMode {
         DISTANCE = 0;

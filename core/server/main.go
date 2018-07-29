@@ -6,8 +6,12 @@ import (
 )
 
 func SprintsServer(cfg core.ServerConfig) {
-	devicePoller, err := device.SetupDevice(cfg.InputDevice, cfg.SamplingRate,
-		cfg.FailstartThreshold)
+
+	devicePoller, err := device.SetupDevice(
+		cfg.InputDevice, cfg.SamplingRate, cfg.FailstartThreshold,
+	)
+	defer devicePoller.Close()
+
 	if err != nil {
 		panic(err)
 	}
@@ -17,7 +21,15 @@ func SprintsServer(cfg core.ServerConfig) {
 		panic(err)
 	}
 
-	cmdServer, err := SetupCmdServer(cfg.Port, cfg.GrpcDebug, SetupSprints(devicePoller, visMux))
+	sprintsDb, err := SetupSprintsDb(cfg.DbPath)
+	defer sprintsDb.Close()
+	if err != nil {
+		panic(err)
+	}
+	cmdServer, err := SetupCmdServer(
+		cfg.Port, cfg.GrpcDebug,
+		SetupSprints(devicePoller, visMux, sprintsDb),
+	)
 	if err != nil {
 		panic(err)
 	}
@@ -26,6 +38,11 @@ func SprintsServer(cfg core.ServerConfig) {
 		panic(err)
 	}
 
+	core.ExitGracefully(func() {
+		devicePoller.Close()
+		sprintsDb.Close()
+		cmdServer.Stop()
+	})
+
 	cmdServer.Run()
-	devicePoller.Close()
 }

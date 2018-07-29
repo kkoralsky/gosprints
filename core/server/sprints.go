@@ -18,15 +18,27 @@ type Sprints struct {
 	curRace     *pb.Race
 	results     map[pb.Gender][]*pb.Result
 	abortRace   chan struct{}
+	sprintsDb   *SprintsDb
 }
 
-func SetupSprints(device device.InputDevice, visMux *VisMux) (s *Sprints) {
+func SetupSprints(device device.InputDevice, visMux *VisMux, sprintsDb *SprintsDb) (s *Sprints) {
+	var (
+		err        error
+		tournament *pb.Tournament
+	)
 	s = &Sprints{
 		inputDevice: device,
 		visMux:      visMux,
+		sprintsDb:   sprintsDb,
 		results:     make(map[pb.Gender][]*pb.Result, 3),
 	}
-	s.NewTournament(context.Background(), &core.DefultTournament)
+	tournament, err = s.sprintsDb.GetLastTournament()
+	if err != nil {
+		s.NewTournament(context.Background(), &core.DefultTournament)
+	} else {
+		s.loadTournament(tournament)
+	}
+
 	return s
 }
 
@@ -36,7 +48,62 @@ func (s *Sprints) NewTournament(ctx context.Context, tournament *pb.Tournament) 
 	s.results[pb.Gender_FEMALE] = []*pb.Result{}
 	s.results[pb.Gender_OTHER] = []*pb.Result{}
 
+	s.sprintsDb.SaveTournament(s.tournament)
+
 	return tournament, s.visMux.NewTournament(tournament)
+}
+
+func (s *Sprints) LoadTournament(ctx context.Context, tournamentSpec *pb.TournamentSpec) (*pb.Tournament, error) {
+	tournament, err := s.sprintsDb.GetTournament(tournamentSpec.Name)
+	if err != nil {
+		return nil, err
+	}
+	s.loadTournament(tournament)
+	return tournament, nil
+}
+
+func (s *Sprints) loadTournament(tournament *pb.Tournament) {
+	s.tournament = tournament
+	s.results[pb.Gender_MALE] = make([]*pb.Result, 0)
+	s.results[pb.Gender_FEMALE] = make([]*pb.Result, 0)
+	s.results[pb.Gender_OTHER] = make([]*pb.Result, 0)
+
+	for _, result := range s.tournament.Result {
+		s.results[result.Player.Gender] = append(s.results[result.Player.Gender], result)
+		core.DebugLogger.Printf(
+			"%s (%s): %.3f loaded", result.Player.Name,
+			pb.Gender_name[int32(result.Player.Gender)],
+			result.Result,
+		)
+	}
+}
+
+func (s *Sprints) GetTournamentNames(context.Context, *pb.Empty) (*pb.TournamentNames, error) {
+	var tournamentNames = &pb.TournamentNames{Name: []string{}}
+
+	if s.sprintsDb != nil && s.sprintsDb.tournaments != nil {
+		for _, tournament := range s.sprintsDb.tournaments.Tournament {
+			tournamentNames.Name = append(tournamentNames.Name, tournament.Name)
+		}
+		return tournamentNames, nil
+	}
+	return nil, errors.New("No tournaments loaded")
+}
+
+func (s *Sprints) GetCurrentTournament(context.Context, *pb.Empty) (*pb.Tournament, error) {
+	if s.tournament != nil {
+		return s.tournament, nil
+	}
+	return nil, errors.New("No tournament loaded")
+
+}
+
+func (s *Sprints) ShowResults(_ context.Context, resultSpec *pb.ResultSpec) (*pb.Empty, error) {
+	if s.tournament != nil {
+		s.visMux.ShowResults(&pb.Results{Result: s.results[resultSpec.Gender]})
+		return nil, nil
+	}
+	return nil, errors.New("No tournament loaded")
 }
 
 func (s *Sprints) NewRace(ctx context.Context, race *pb.Race) (*pb.Empty, error) {
@@ -83,7 +150,7 @@ func (s *Sprints) ConfigureVis(_ context.Context, visCfg *pb.VisConfiguration) (
 }
 
 func (s *Sprints) GetResults(resultSpec *pb.ResultSpec, stream pb.Sprints_GetResultsServer) error {
-	var results []*pb.Result
+	var results = make([]*pb.Result, len(s.results[resultSpec.Gender]))
 	copy(results, s.results[resultSpec.Gender])
 	sort.Slice(results, func(i, j int) bool {
 		if s.tournament.Mode == pb.Tournament_TIME {
@@ -93,16 +160,14 @@ func (s *Sprints) GetResults(resultSpec *pb.ResultSpec, stream pb.Sprints_GetRes
 		}
 	})
 
+	core.DebugLogger.Printf("sending %d sorted results", len(results))
+
 	for _, result := range results {
 		if err := stream.Send(result); err != nil {
 			return err
 		}
 	}
 	return nil
-}
-
-func (s *Sprints) GetTournaments(*pb.Empty, pb.Sprints_GetTournamentsServer) error {
-	panic("not implemented")
 }
 
 func (s *Sprints) doRace() {
@@ -181,8 +246,8 @@ func (s *Sprints) doRace() {
 				}
 				protoResults = append(protoResults, resultPb)
 				s.results[playerGender] = append(s.results[playerGender], resultPb)
+				s.persistResult(resultPb)
 			}
-
 			s.curRace = nil
 			s.visMux.FinishRace(&pb.Results{Result: protoResults})
 		}
@@ -198,4 +263,11 @@ func (s *Sprints) doRace() {
 
 	s.visMux.CloseRacers()
 	finishRace(results)
+}
+
+func (s *Sprints) persistResult(resultPb *pb.Result) {
+	s.tournament.Result = append(s.tournament.Result, resultPb)
+	if err := s.sprintsDb.SaveTournament(s.tournament); err != nil {
+		core.ErrorLogger.Fatalf("error while saving tournament: %v", err)
+	}
 }
