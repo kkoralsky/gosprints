@@ -18,6 +18,9 @@ func VisualServer(cfg core.VisualConfig) {
 		vis.Run()
 
 		vis = Reconfigure(vis)
-		visServer.Stop()
+
+		core.ExitGracefully(func() {
+			visServer.Stop()
+		})
 	}
 }
