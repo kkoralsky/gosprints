@@ -5,6 +5,9 @@
 /mobile/mobile
 /raspio/goldio
 
+# default tournament data file
+/sprints.pb
+
 # go-qt compilation side-effects
 /mobile/deploy
 /mobile/**/*.qmlc
