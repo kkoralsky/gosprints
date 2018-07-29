@@ -21,6 +21,7 @@ type VisMuxInterface interface {
 	SendRaceUpdate(uint32, uint32)
 	CloseRacers()
 	FinishRace(*pb.Results)
+	ShowResults(*pb.Results)
 }
 
 type VisMux struct {
@@ -28,7 +29,6 @@ type VisMux struct {
 	connections []*grpc.ClientConn
 	clients     []pb.VisualClient
 	racers      []pb.Visual_UpdateRaceClient
-	pb.SprintsClient
 }
 
 func SetupVisMux(outputs string) (*VisMux, error) {
@@ -137,6 +137,12 @@ func (v *VisMux) CloseRacers() error {
 		return fmt.Errorf("%d racers not closed", len_before-closed)
 	}
 	return nil
+}
+
+func (v *VisMux) ShowResults(results *pb.Results) {
+	for _, cl := range v.clients {
+		go cl.ShowResults(context.Background(), results)
+	}
 }
 
 func (v *VisMux) FinishRace(results *pb.Results) error {
