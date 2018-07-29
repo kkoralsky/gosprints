@@ -16,15 +16,16 @@ func main() {
 	}
 	flag.Parse()
 
-	if len(os.Args) > 1 {
-		switch os.Args[1] {
+	args := flag.Args()
+	if flag.NArg() > 1 {
+		switch args[0] {
 		case "server":
 			cfg := core.ServerConfig{}
-			core.FlagsetParse(cfg.Setup(), os.Args[2:], cfg.Validate)
+			core.FlagsetParse(cfg.Setup(), args[1:], cfg.Validate)
 			server.SprintsServer(cfg)
 		case "visual":
 			cfg := core.VisualConfig{}
-			core.FlagsetParse(cfg.Setup(), os.Args[2:], nil)
+			core.FlagsetParse(cfg.Setup(), args[1:], nil)
 			visual.VisualServer(cfg)
 		default:
 			flag.Usage()
