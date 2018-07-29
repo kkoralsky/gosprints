@@ -135,6 +135,7 @@ Page {
             Button {
                 Layout.alignment: Qt.AlignRight
                 text: "Setup"
+                enabled: TournamentConfig.tournaments.indexOf(tournamentNameTextField.text) == -1
                 onClicked: {
                     SprintsClient.newTournament(
                         newTournamentPage.name,
