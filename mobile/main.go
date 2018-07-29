@@ -42,6 +42,7 @@ func main() {
 
 	root.SetContextProperty("SprintsClient", sprintsClient)
 	root.SetContextProperty("ResultModel", sprintsClient.resultModel)
+	root.SetContextProperty("TournamentConfig", sprintsClient.tournamentConfig)
 	root.SetContextProperty2("connectionHost", connectionHost)
 	root.SetContextProperty2("connectionPort", connectionPort)
 

@@ -13,17 +13,31 @@ import (
 	"time"
 )
 
+// TournamentConfig will be replaced whenever new connection is established
+type TournamentConfig struct {
+	core.QObject
+
+	_ string   `property:"name"`
+	_ int      `property:"playerCount"`
+	_ int      `property:"mode"`
+	_ []string `property:"color"`
+	_ int      `property:"destValue"`
+	_ []string `property:"tournaments"`
+	_ int      `property:"currentIndex"`
+}
+
 // SprintsClient is GRPC client calling Sprints service
 type SprintsClient struct {
 	core.QObject
 
-	conn        *grpc.ClientConn
-	addr        string
-	connState   connectivity.State
-	client      pb.SprintsClient
-	tournament  *pb.Tournament
-	race        *pb.Race
-	resultModel *ResultModel
+	conn             *grpc.ClientConn
+	addr             string
+	connState        connectivity.State
+	client           pb.SprintsClient
+	tournament       *pb.Tournament
+	race             *pb.Race
+	resultModel      *ResultModel
+	tournamentConfig *TournamentConfig
 
 	_ func(msg string)      `signal:"info"`
 	_ func(err, msg string) `signal:"error"`
@@ -32,11 +46,16 @@ type SprintsClient struct {
 	_ int                                                 `property:"connState"`
 	_ func(string, uint, bool) string                     `slot:"dialGrpc"`
 	_ func(string, uint, int32, uint, []string) string    `slot:"newTournament"`
+	_ func(string) error                                  `slot:"loadTournament"`
 	_ func([]string, uint) string                         `slot:"newRace"`
 	_ func() string                                       `slot:"startRace"`
 	_ func() string                                       `slot:"abortRace"`
 	_ func(string, string, bool, uint, uint, uint) string `slot:"configureVis"`
 	_ func(string)                                        `slot:"getResults"`
+}
+
+func init() {
+	TournamentConfig_QmlRegisterType()
 }
 
 type SprintsClientInterface interface {
@@ -51,6 +70,7 @@ type SprintsClientInterface interface {
 
 func SetupSprintsClient(resultModel *ResultModel) *SprintsClient {
 	client := NewSprintsClient(nil)
+	client.tournamentConfig = NewTournamentConfig(nil)
 
 	client.resultModel = resultModel
 	client.connState = connectivity.Shutdown
@@ -62,6 +82,7 @@ func SetupSprintsClient(resultModel *ResultModel) *SprintsClient {
 	client.ConnectAbortRace(client.abortRace)
 	client.ConnectConfigureVis(client.configureVis)
 	client.ConnectGetResults(client.getResults)
+	client.ConnectLoadTournament(client.loadTournament)
 
 	// client.dialGrpc(defaultHost, defaultPort, false)
 
@@ -94,8 +115,48 @@ func (s *SprintsClient) dialGrpc(hostName string, port uint, blocking bool) stri
 }
 
 func (s *SprintsClient) setConnState() {
-	s.connState = s.conn.GetState()
-	s.SetConnState(int(s.connState)) // notify qml
+	if s.conn != nil {
+		s.connState = s.conn.GetState()
+		s.SetConnState(int(s.connState)) // notify qml
+		if s.connState == connectivity.Ready {
+			s.replaceTournamentConfig()
+		}
+	}
+}
+
+func (s *SprintsClient) replaceTournamentConfig() {
+	var (
+		tournamentNames *pb.TournamentNames
+		err             error
+	)
+	tournamentNames, err = s.client.GetTournamentNames(context.Background(), &pb.Empty{})
+	if err != nil {
+		// FIXME this too
+		return
+	}
+
+	s.tournament, err = s.client.GetCurrentTournament(context.Background(), &pb.Empty{})
+	if err != nil {
+		// FIXME handle this somehow
+		return
+	}
+
+	for i, name := range tournamentNames.Name {
+		if name == s.tournament.Name {
+			s.tournamentConfig.SetCurrentIndex(i)
+		}
+	}
+
+	s.tournamentConfig.SetTournaments(tournamentNames.Name)
+	s.updateCurrentTournament()
+}
+
+func (s *SprintsClient) updateCurrentTournament() {
+	s.tournamentConfig.SetMode(int(s.tournament.Mode))
+	s.tournamentConfig.SetPlayerCount(int(s.tournament.PlayerCount))
+	s.tournamentConfig.SetColor(s.tournament.Color)
+	s.tournamentConfig.SetName(s.tournament.Name)
+	s.tournamentConfig.SetDestValue(int(s.tournament.DestValue))
 }
 
 func (s *SprintsClient) updateConnectionState() {
@@ -130,6 +191,13 @@ func (s *SprintsClient) newTournament(name string, destValue uint, mode int, pla
 		return err.Error()
 	}
 	return ""
+}
+
+func (s *SprintsClient) loadTournament(name string) (err error) {
+	s.tournament, err = s.client.LoadTournament(context.Background(), &pb.TournamentSpec{Name: name})
+	s.updateCurrentTournament()
+
+	return err
 }
 
 func (s *SprintsClient) newRace(playerNames []string, destValue uint) string {
@@ -215,6 +283,7 @@ func (s *SprintsClient) getResults(gender string) {
 			result.Result,
 			uint(result.DestValue))
 	}
+	log.DebugLogger.Printf("loaded %d results", s.resultModel.rowCount(nil))
 	return
 }
 

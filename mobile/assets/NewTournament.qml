@@ -18,8 +18,46 @@ Page {
 
     Binding {
         target: newTournamentPage
+        property: "name" 
+        value: tournamentNameTextField.text
+    }
+    Binding {
+        target: newTournamentPage
         property: "mode"
         value: tournamentDistanceRadio.checked ? NewTournament.TournamentMode.DISTANCE : NewTournament.TournamentMode.TIME
+    }
+    Binding {
+        target: newTournamentPage
+        property: "playerCount" 
+        value: tournamentPlayerCountSpinBox.value
+    }
+    Binding {
+        target: newTournamentPage
+        property: "destValue"
+        value: tournamentDesintationSpinBox.value
+    }
+
+    Connections {
+        target: TournamentConfig
+        onNameChanged: {
+            newTournamentPage.name = TournamentConfig.name
+            tournamentNameTextField.text = TournamentConfig.name
+        } 
+        onModeChanged: {
+            newTournamentPage.mode =  TournamentConfig.mode
+            if(TournamentConfig.mode == NewTournament.TournamentMode.DISTANCE)
+                tournamentDistanceRadio.checked = true
+            else
+                tournamentTimeRadio.checked = true
+        }
+        onDestValueChanged: {
+            newTournamentPage.destValue = TournamentConfig.destValue
+            tournamentDesintationSpinBox.value = TournamentConfig.destValue
+        }
+        onPlayerCountChanged: {
+            newTournamentPage.playerCount = TournamentConfig.playerCount
+            tournamentPlayerCountSpinBox.value = TournamentConfig.playerCount
+        }
     }
 
     Column {

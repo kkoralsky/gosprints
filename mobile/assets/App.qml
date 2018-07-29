@@ -106,6 +106,13 @@ ApplicationWindow {
                             stackView.push(newTournamentPage)
                         }
                     }
+
+                    MenuItem {
+                        text: "Load Tournament"
+                        onTriggered: {
+                            loadTournamentPopup.open()
+                        }
+                    }
                 }
             }
         }
@@ -150,13 +157,13 @@ ApplicationWindow {
 
                 Label {
                     text: "Host:"
-                    width: settingsPopup.width / 3
+                    // width: settingsPopup.width / 3
                 }
 
                 TextField {
                     id: connectionHostField
                     placeholderText: connectionHost
-                    width: settingsPopup.width / 2
+                    // width: settingsPopup.width / 2
                 }
             }
 
@@ -165,13 +172,13 @@ ApplicationWindow {
 
                 Label {
                     text: "Port:"
-                    width: settingsPopup.width / 3
+                    // width: settingsPopup.width / 3
                 }
 
                 TextField {
                     id: connectionPortField
                     placeholderText: connectionPort
-                    width: settingsPopup.width / 2
+                    // width: settingsPopup.width / 2
                 }
             }
 
@@ -216,37 +223,42 @@ ApplicationWindow {
     }
 
     Popup {
-        id: aboutDialog
+        id: loadTournamentPopup
         modal: true
         focus: true
         x: (window.width - width) / 2
         y: window.height / 6
         width: Math.min(window.width, window.height) / 3 * 2
-        contentHeight: aboutColumn.height
+        contentHeight: loadTournamentColumn.height
+
+        Connections {
+            target: TournamentConfig
+            onCurrentIndexChanged: {
+                // console.log(TournamentConfig.currentIndex)
+                loadTournamentCombo.currentIndex = TournamentConfig.currentIndex
+            } 
+        }
 
         Column {
-            id: aboutColumn
+            id: loadTournamentColumn
+            width: parent.width
             spacing: 20
 
             Label {
-                text: "About"
+                text: "Load Tournament"
                 font.bold: true
             }
 
-            Label {
-                width: aboutDialog.availableWidth
-                text: "The Qt Quick Controls 2 module delivers the next generation user interface controls based on Qt Quick."
-                wrapMode: Label.Wrap
-                font.pixelSize: 12
-            }
-
-            Label {
-                width: aboutDialog.availableWidth
-                text: "In comparison to the desktop-oriented Qt Quick Controls 1, Qt Quick Controls 2 "
-                    + "are an order of magnitude simpler, lighter and faster, and are primarily targeted "
-                    + "towards embedded and mobile platforms."
-                wrapMode: Label.Wrap
-                font.pixelSize: 12
+            ComboBox {
+                id: loadTournamentCombo
+                model: TournamentConfig.tournaments
+                width: parent.width
+                currentIndex: TournamentConfig.currentIndex
+                onActivated: {
+                    loadTournamentPopup.close()
+                    SprintsClient.loadTournament(model[index])
+                    SprintsClient.getResults("MALE")
+                }
             }
         }
     }
