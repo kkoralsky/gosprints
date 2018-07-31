@@ -85,7 +85,7 @@ void init(char *ports, const char pull_up) {
                 if(!simulate)
                     pinMode(port_num, INPUT);
                 if(pull_up && !simulate) {
-                    pullUpDnControl(pins[i].port_num, PUD_UP);
+                    pullUpDnControl(port_num, PUD_UP);
                 }
                 pins = realloc(pins, (i+1)*sizeof(*pin));
                 pins[i].port_num = port_num;
@@ -199,4 +199,5 @@ int main(int argc, char *const* argv)
         race(pull_up, threshold, wait);
 
     cleanup();
+    return 0;
 }
