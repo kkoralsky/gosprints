@@ -116,6 +116,7 @@ func (b *pixelBaseVis) NewRace(_ context.Context, race *pb.Race) (*pb.Empty, err
 
 	b.Clear()
 	b.playerNames = nil
+	b.racingData = nil
 	starterText := text.New(winCenter, b.fontAtlas)
 	starterText.LineHeight = b.fontAtlas.LineHeight() * 2.5
 	for i, p := range race.Players {
@@ -247,6 +248,8 @@ func (b *pixelBaseVis) UpdateRace(stream pb.Visual_UpdateRaceServer) error {
 		racer *pb.Racer
 		err   error
 	)
+	b.Clear()
+	b.win.Update()
 	for i := float64(fontScale); ; i++ {
 		racer, err = stream.Recv()
 		if err != nil {
