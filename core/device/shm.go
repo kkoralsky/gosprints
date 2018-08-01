@@ -176,7 +176,7 @@ func (s *ShmReader) GetDist(playerID uint) (uint, error) {
 	var errCtx = fmt.Sprintf("reading for %d player failed", playerID)
 
 	res, err := s.readSegment(playerID)
-	log.DebugLogger.Printf("player %d, distance: %d", playerID, res)
+	// log.DebugLogger.Printf("player %d, distance: %d", playerID, res)
 	return res, errors.Wrap(err, errCtx)
 }
 
