@@ -6,6 +6,7 @@ import (
 	"github.com/kkoralsky/gosprints/core"
 	pb "github.com/kkoralsky/gosprints/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/connectivity"
 	"strings"
 	"time"
 )
@@ -25,17 +26,18 @@ type VisMuxInterface interface {
 }
 
 type VisMux struct {
-	addresses   []string
-	connections []*grpc.ClientConn
-	clients     []pb.VisualClient
-	racers      []pb.Visual_UpdateRaceClient
+	addresses     []string
+	connections   []*grpc.ClientConn
+	clients       []pb.VisualClient
+	racers        []pb.Visual_UpdateRaceClient
+	curTournament *pb.Tournament
 }
 
 func SetupVisMux(outputs string) (*VisMux, error) {
 	var v = VisMux{
 		addresses: strings.Split(outputs, ","),
 	}
-	for _, addr := range v.addresses {
+	for i, addr := range v.addresses {
 		conn, err := grpc.Dial(addr, grpc.WithInsecure(), grpc.WithTimeout(10*time.Second))
 		if err != nil {
 			core.ErrorLogger.Printf("error while dialing to %s: %s\n", addr, err.Error())
@@ -43,16 +45,18 @@ func SetupVisMux(outputs string) (*VisMux, error) {
 			v.connections = append(v.connections, conn)
 			v.clients = append(v.clients, pb.NewVisualClient(conn))
 			core.InfoLogger.Printf("dialed to vis: %s with state: %s\n", addr, conn.GetState().String())
+			go v.connectionStateUpdater(i, conn)
 		}
 	}
 	if len(v.connections) > 0 {
-		go v.connectionStateUpdater()
 		return &v, nil
 	}
 	return &v, fmt.Errorf("couldnt connect to none of the outputs: %s", outputs)
 }
 
 func (v *VisMux) NewTournament(tournament *pb.Tournament) error {
+	v.curTournament = tournament
+
 	for _, cl := range v.clients {
 		go cl.NewTournament(context.Background(), tournament)
 	}
@@ -87,20 +91,19 @@ func (v *VisMux) ConfigureVis(visCfg *pb.VisConfiguration) error {
 	return nil
 }
 
-func (v *VisMux) connectionStateUpdater() {
-	for i, conn := range v.connections {
-		go func() {
-			for conn != nil {
-				conn.WaitForStateChange(context.Background(), conn.GetState())
-				if conn != nil {
-					core.InfoLogger.Printf("vis connection: %s state: %s",
-						v.addresses[i], conn.GetState().String())
-				}
+func (v *VisMux) connectionStateUpdater(i int, conn *grpc.ClientConn) {
+	for conn != nil {
+		conn.WaitForStateChange(context.Background(), conn.GetState())
+		if conn != nil {
+			core.InfoLogger.Printf("vis connection: %s state: %s",
+				v.addresses[i], conn.GetState().String())
+			if conn.GetState() == connectivity.Ready && v.curTournament != nil {
+				v.clients[i].NewTournament(context.Background(), v.curTournament)
 			}
-
-			core.InfoLogger.Printf("vis connectino: %s closed", v.addresses[i])
-		}()
+		}
 	}
+
+	core.InfoLogger.Printf("vis connection: %s closed", v.addresses[i])
 }
 
 func (v *VisMux) SetupRacers() {
