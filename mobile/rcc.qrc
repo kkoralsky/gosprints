@@ -3,6 +3,7 @@
 <file>assets/App.qml</file>
 <file>assets/NewTournament.qml</file>
 <file>assets/Race.qml</file>
+<file>assets/Results.qml</file>
 <file>assets/Tournament.qml</file>
 <file>assets/FontAwesome/fontawesome-webfont.ttf</file>
 <file>assets/FontAwesome/FontAwesome.qml</file>
