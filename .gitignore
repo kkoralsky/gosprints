@@ -8,6 +8,9 @@
 # default tournament data file
 /sprints.pb
 
+# custom mobile makefile
+/mobile/Makefile.custom
+
 # go-qt compilation side-effects
 /mobile/deploy
 /mobile/**/*.qmlc
