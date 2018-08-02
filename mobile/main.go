@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	defaultHost      = "localhost"
-	defaultPort uint = 9998
+	defaultHost      = "192.168.1.x"
+	defaultPort uint = 9999
 )
 
 func main() {
