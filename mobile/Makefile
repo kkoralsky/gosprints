@@ -36,7 +36,7 @@ $(LINUX_ARTIFACT): *.go assets/**
 	qtdeploy -debug build linux
 	@touch mobile  # ^ modifies moc.go
 
-$(ANDROID_ARTIFACT): *.go assets/** android/**
+$(ANDROID_ARTIFACT): *.go rcc.qrc assets/** android/**
 	qtdeploy -debug build android
 	@touch mobile  # ^ modifies moc.go
 
@@ -45,3 +45,5 @@ $(ANDROID_ARTIFACT): *.go assets/** android/**
 
 .runandroid: $(ANDROID_ARTIFACT)
 	@touch $@
+
+include Makefile.custom

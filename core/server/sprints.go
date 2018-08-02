@@ -210,7 +210,7 @@ func (s *Sprints) doRace() {
 						}
 					}
 				}
-				time.Sleep(50 * time.Millisecond)
+				time.Sleep(time.Millisecond)
 			}
 			return
 		}
@@ -231,7 +231,7 @@ func (s *Sprints) doRace() {
 						getDistance(i)
 					}
 				}
-				time.Sleep(50 * time.Millisecond)
+				time.Sleep(time.Millisecond)
 			}
 			return playersDists
 		}
