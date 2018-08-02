@@ -56,8 +56,9 @@ Pane {
             }
         }
 
-        RowLayout {
-            spacing: 20
+        GridLayout {
+            columnSpacing: 10
+            rowSpacing: 10
             anchors.horizontalCenter: parent.horizontalCenter
 
             Button {
