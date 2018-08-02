@@ -204,7 +204,7 @@ func (s *Sprints) doRace() {
 						if getDistance(i) >= wholeDistance {
 							if playersTimes[i] == 0 {
 								playersFinished++
-								playersTimes[i] = uint(time.Now().Sub(start))
+								playersTimes[i] = uint(time.Now().Sub(start) / time.Millisecond)
 								core.DebugLogger.Printf("player #%d finished", i)
 							}
 						}
