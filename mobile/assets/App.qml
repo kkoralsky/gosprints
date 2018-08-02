@@ -157,13 +157,12 @@ ApplicationWindow {
 
                 Label {
                     text: "Host:"
-                    // width: settingsPopup.width / 3
                 }
 
                 TextField {
                     id: connectionHostField
                     placeholderText: connectionHost
-                    // width: settingsPopup.width / 2
+                    Layout.fillWidth: true
                 }
             }
 
@@ -178,7 +177,7 @@ ApplicationWindow {
                 TextField {
                     id: connectionPortField
                     placeholderText: connectionPort
-                    // width: settingsPopup.width / 2
+                    Layout.fillWidth: true
                 }
             }
 
