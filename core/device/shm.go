@@ -55,7 +55,7 @@ func (s *ShmReader) Init(ports []string, samplingRate uint, falseStart uint) err
 		counterExecPath = defaultShmCounterExecutable
 	}
 	if _, found = os.LookupEnv(shmSudoEnv); found {
-		counterArgs[0] = counterExecPath
+		counterArgs = append(counterArgs, "-E", counterExecPath)
 	}
 	if _, found = os.LookupEnv(shmPullUpEnv); found {
 		counterArgs = append(counterArgs, "-p")
@@ -69,7 +69,7 @@ func (s *ShmReader) Init(ports []string, samplingRate uint, falseStart uint) err
 
 	counterArgs = append(counterArgs, fmt.Sprintf("-t %d", samplingRate), strings.Join(ports, ","))
 
-	if counterExecPath == counterArgs[0] {
+	if counterArgs[0] == "-E" {
 		s.counterCmd = exec.Command("sudo", counterArgs...)
 	} else {
 		s.counterCmd = exec.Command(counterExecPath, counterArgs...)
