@@ -8,6 +8,9 @@
 # default tournament data file
 /sprints.pb
 
+# vendor w/ go dependencies folder
+/vendor
+
 # custom mobile makefile
 /mobile/Makefile.custom
 
