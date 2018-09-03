@@ -6,8 +6,9 @@ DIST_CFLAGS=-O2
 WIRINGPI_PATH=./wiringPi/wiringPi
 WIRINGPI_SONAME=wiringPi
 WIRINGPI_LIB=$(WIRINGPI_PATH)/lib$(WIRINGPI_SONAME).so
+WIRINGPI_STATIC=$(WIRINGPI_PATH)/lib$(WIRINGPI_SONAME).a
 
-.PHONY: dist
+.PHONY: dist clean
 
 goldio: goldio.c $(WIRINGPI_LIB)
 	$(CC) $(CFLAGS) -L$(WIRINGPI_PATH) -I$(WIRINGPI_PATH) -lrt -l$(WIRINGPI_SONAME) -o $@ $<
@@ -16,8 +17,11 @@ $(WIRINGPI_LIB): $(WIRINGPI_PATH)/*.c
 	$(MAKE) -C $(WIRINGPI_PATH)
 	cd $(WIRINGPI_PATH) && ln -s lib$(WIRINGPI_SONAME).so.* lib$(WIRINGPI_SONAME).so
 
-dist:
-	@$(CC) $(DIST_CFLAGS) -L$(WIRINGPI_PATH) -I$(WIRINGPI_PATH) -lrt -l$(WIRINGPI_SONAME) -o goldio goldio.c
+$(WIRINGPI_STATIC): $(WIRINGPI_LIB)
+	ar rcs $(WIRINGPI_STATIC) $(WIRINGPI_PATH)/*.o 	
+
+dist: goldio.c $(WIRINGPI_STATIC)
+	$(CC) $(DIST_CFLAGS) -o goldio $< -L$(WIRINGPI_PATH) -I$(WIRINGPI_PATH) -l:lib$(WIRINGPI_SONAME).a -lrt -lpthread
 
 clean:
 	@rm goldio
