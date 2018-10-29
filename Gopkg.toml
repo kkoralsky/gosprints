@@ -55,10 +55,6 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/therecipe/qt"
-
-[[constraint]]
-  branch = "master"
   name = "golang.org/x/image"
 
 [[constraint]]
@@ -75,8 +71,3 @@
   [[prune.project]]
     name = "github.com/go-gl/glfw"
     unused-packages = false
-  [[prune.project]]
-    unused-packages = false
-    name = "github.com/therecipe/qt"
-
-
