@@ -222,7 +222,7 @@ func (s *SprintsClient) newRace(playerNames []string, destValue uint) string {
 }
 
 func (s *SprintsClient) startRace() string {
-	_, err := s.client.StartRace(context.Background(), &pb.Starter{CountdownTime: 3})
+	_, err := s.client.StartRace(context.Background(), &pb.Empty{})
 	if err != nil {
 		log.ErrorLogger.Println(err.Error())
 		return err.Error()
