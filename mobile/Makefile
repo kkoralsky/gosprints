@@ -46,4 +46,8 @@ $(ANDROID_ARTIFACT): *.go rcc.qrc assets/** android/**
 .runandroid: $(ANDROID_ARTIFACT)
 	@touch $@
 
+updateqt:
+	go get -v github.com/therecipe/qt/cmd/... 
+	CGO_CXXFLAGS_ALLOW=".*" CGO_LDFLAGS_ALLOW=".*" CGO_CFLAGS_ALLOW=".*" $$GOPATH/bin/qtsetup
+
 include Makefile.custom
