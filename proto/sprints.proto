@@ -5,7 +5,7 @@ package pb;
 service Sprints {
     rpc NewTournament(Tournament) returns (Tournament);
     rpc NewRace(Race) returns (Empty);
-    rpc StartRace(Starter) returns (Player);
+    rpc StartRace(Empty) returns (Player);
     rpc AbortRace(AbortMessage) returns (Empty);
     rpc ConfigureVis(VisConfiguration) returns (Empty);
     rpc GetResults(ResultSpec) returns (stream Result);
