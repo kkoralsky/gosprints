@@ -16,6 +16,7 @@ type cliSetup interface {
 type ServerConfig struct {
 	DestValue          uint
 	SamplingRate       uint
+	CountDownTime      uint
 	FailstartThreshold uint
 	Port               uint
 	RaceMode           rune
@@ -44,6 +45,7 @@ var (
 	defaultServerConfig = ServerConfig{
 		DestValue:          400,
 		SamplingRate:       5,
+		CountDownTime:      3000,
 		FailstartThreshold: 5,
 		Port:               9999,
 		RaceMode:           't',
@@ -76,6 +78,8 @@ func (s *ServerConfig) Setup() *flag.FlagSet {
 		"destination value to reach during a race")
 	cfg.UintVar(&s.SamplingRate, "sampling_rate", defaultServerConfig.SamplingRate,
 		"how many wheel turnovers causes animation to move")
+	cfg.UintVar(&s.CountDownTime, "countdown_time", defaultServerConfig.CountDownTime,
+		"period before start in miliseconds")
 	cfg.UintVar(&s.FailstartThreshold, "failstart_threshold",
 		defaultServerConfig.FailstartThreshold,
 		"how many wheel turnovers is acceptable during countdown")

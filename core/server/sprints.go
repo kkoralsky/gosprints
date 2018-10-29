@@ -14,6 +14,7 @@ import (
 type Sprints struct {
 	inputDevice device.InputDevice
 	visMux      *VisMux
+	starter     *pb.Starter
 	tournament  *pb.Tournament
 	curRace     *pb.Race
 	results     map[pb.Gender][]*pb.Result
@@ -21,7 +22,7 @@ type Sprints struct {
 	sprintsDb   *SprintsDb
 }
 
-func SetupSprints(device device.InputDevice, visMux *VisMux, sprintsDb *SprintsDb) (s *Sprints) {
+func SetupSprints(device device.InputDevice, visMux *VisMux, sprintsDb *SprintsDb, countDownTime uint) (s *Sprints) {
 	var (
 		err        error
 		tournament *pb.Tournament
@@ -31,6 +32,7 @@ func SetupSprints(device device.InputDevice, visMux *VisMux, sprintsDb *SprintsD
 		visMux:      visMux,
 		sprintsDb:   sprintsDb,
 		results:     make(map[pb.Gender][]*pb.Result, 3),
+		starter:     &pb.Starter{CountdownTime: uint32(countDownTime)},
 	}
 	tournament, err = s.sprintsDb.GetLastTournament()
 	if err != nil {
@@ -113,14 +115,14 @@ func (s *Sprints) NewRace(ctx context.Context, race *pb.Race) (*pb.Empty, error)
 	return &pb.Empty{}, err
 }
 
-func (s *Sprints) StartRace(_ context.Context, starter *pb.Starter) (*pb.Player, error) {
+func (s *Sprints) StartRace(_ context.Context, _ *pb.Empty) (*pb.Player, error) {
 	if s.curRace == nil {
 		return &pb.Player{}, errors.New("race is not established")
 	}
-	s.visMux.StartRace(starter)
+	s.visMux.StartRace(s.starter)
 	s.inputDevice.Clean()
 	s.abortRace = make(chan struct{}, 10) // allow to up to 10 unhandled "aborts"
-	time.Sleep(time.Duration(starter.CountdownTime) * time.Second)
+	time.Sleep(time.Duration(s.starter.CountdownTime) * time.Millisecond)
 	if playerNum, err := s.inputDevice.Check(); err != nil {
 		return &pb.Player{}, err
 	} else {
@@ -155,9 +157,9 @@ func (s *Sprints) GetResults(resultSpec *pb.ResultSpec, stream pb.Sprints_GetRes
 	copy(results, s.results[resultSpec.Gender])
 	sort.Slice(results, func(i, j int) bool {
 		if s.tournament.Mode == pb.Tournament_TIME {
-			return results[i].Result < results[j].Result
-		} else {
 			return results[i].Result > results[j].Result
+		} else {
+			return results[i].Result < results[j].Result
 		}
 	})
 

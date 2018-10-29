@@ -28,7 +28,7 @@ func SprintsServer(cfg core.ServerConfig) {
 	}
 	cmdServer, err := SetupCmdServer(
 		cfg.Port, cfg.GrpcDebug,
-		SetupSprints(devicePoller, visMux, sprintsDb),
+		SetupSprints(devicePoller, visMux, sprintsDb, cfg.CountDownTime),
 	)
 	if err != nil {
 		panic(err)
