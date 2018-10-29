@@ -1,7 +1,6 @@
 package device
 
 import (
-	// "encoding/binary"
 	"fmt"
 	"github.com/hidez8891/shm"
 	log "github.com/kkoralsky/gosprints/core"

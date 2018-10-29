@@ -87,7 +87,6 @@ func (b *BaseVis) getResult(result float32) float32 {
 	case pb.Tournament_DISTANCE:
 		return result * float32(math.Pow10(-9)) // decode from nanoseconds to seconds
 	case pb.Tournament_TIME:
-		// return float32(b.visCfg.DistFactor) * result / 100 // in meters
 		return result
 	}
 	return 0.0
