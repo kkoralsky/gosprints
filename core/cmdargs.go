@@ -77,7 +77,7 @@ func (s *ServerConfig) Setup() *flag.FlagSet {
 	cfg.UintVar(&s.DestValue, "dest_value", defaultServerConfig.DestValue,
 		"destination value to reach during a race")
 	cfg.UintVar(&s.SamplingRate, "sampling_rate", defaultServerConfig.SamplingRate,
-		"how many wheel turnovers causes animation to move")
+		"how many wheel turnovers causes device to count a 'move', which in turn triggers animation")
 	cfg.UintVar(&s.CountDownTime, "countdown_time", defaultServerConfig.CountDownTime,
 		"period before start in miliseconds")
 	cfg.UintVar(&s.FailstartThreshold, "failstart_threshold",
