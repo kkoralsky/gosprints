@@ -36,7 +36,13 @@ Pane {
 
                 Label {
                     Layout.fillWidth: true
-                    text: score + (newTournamentPage.mode == NewTournament.TournamentMode.DISTANCE ? "s" : "m")
+                    text: {
+                        if(newTournamentPage.mode == NewTournament.TournamentMode.DISTANCE) {
+                            return score / 1000 + "s"
+                        } else {
+                            return score + "m"
+                        }
+                    }
                     horizontalAlignment: Qt.AlignRight
                 }
             }
