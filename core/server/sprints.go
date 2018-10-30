@@ -157,9 +157,17 @@ func (s *Sprints) GetResults(resultSpec *pb.ResultSpec, stream pb.Sprints_GetRes
 	copy(results, s.results[resultSpec.Gender])
 	sort.Slice(results, func(i, j int) bool {
 		if s.tournament.Mode == pb.Tournament_TIME {
-			return results[i].Result > results[j].Result
+			if results[i].DestValue == results[j].DestValue {
+				return results[i].Result > results[j].Result
+			} else {
+				return results[i].DestValue < results[j].DestValue
+			}
 		} else {
-			return results[i].Result < results[j].Result
+			if results[i].DestValue == results[j].DestValue {
+				return results[i].Result < results[j].Result
+			} else {
+				return results[i].DestValue > results[j].DestValue
+			}
 		}
 	})
 
